@@ -3,4 +3,5 @@
 *.log
 .DS_Store
 Gemfile.lock
+/vendor/
 /v*/Gemfile.lock.bak

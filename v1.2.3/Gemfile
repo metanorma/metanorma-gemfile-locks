@@ -1,0 +1,4 @@
+source "https://rubygems.org"
+
+gem "metanorma"
+gem "metanorma-cli", "1.2.3"

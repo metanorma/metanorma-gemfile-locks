@@ -81,15 +81,16 @@ module MetanormaGemfileLocks
           return
         end
 
-        # Extract directory path (e.g., /setup or /)
-        extract_dir = gemfile_path.sub("/Gemfile", "")
+        # Extract directory path (e.g., /setup/ or /)
+        extract_dir = gemfile_path.sub("Gemfile", "")
 
         # Copy Gemfile
         system("docker", "cp", "#{container_name}:#{gemfile_path}",
                File.join(version_dir, "Gemfile"))
 
-        # Copy Gemfile.lock
-        system("docker", "cp", "#{container_name}:#{extract_dir}Gemfile.lock",
+        # Copy Gemfile.lock (ensure proper path with trailing slash)
+        gemfile_lock_path = extract_dir.end_with?("/") ? "#{extract_dir}Gemfile.lock" : "#{extract_dir}/Gemfile.lock"
+        system("docker", "cp", "#{container_name}:#{gemfile_lock_path}",
                File.join(version_dir, "Gemfile.lock"))
 
         puts "  Extracted to v#{version}/ (from #{extract_dir})"

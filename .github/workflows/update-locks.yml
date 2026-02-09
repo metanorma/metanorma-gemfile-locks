@@ -6,6 +6,11 @@ on:
     - cron: '0 0 * * *'
   workflow_dispatch:  # Allow manual trigger
 
+# Concurrency: only allow one run at a time, cancel in-progress runs
+concurrency:
+  group: update-locks
+  cancel-in-progress: true
+
 permissions:
   contents: write
   pull-requests: write

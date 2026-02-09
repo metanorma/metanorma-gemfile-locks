@@ -6,14 +6,14 @@ require "yaml"
 namespace :extract do
   desc "Extract Gemfile/Gemfile.lock for a specific version (e.g., rake extract[1.14.4])"
   task :version, [:version] do |_t, args|
-    require_relative "script/extract-locks"
+    require_relative "lib/metanorma_gemfile_locks"
     extractor = MetanormaGemfileLocks::Extractor.new
     extractor.extract_version(args[:version])
   end
 
   desc "Extract all available versions from Docker Hub"
   task :all do
-    require_relative "script/extract-locks"
+    require_relative "lib/metanorma_gemfile_locks"
     extractor = MetanormaGemfileLocks::Extractor.new
     extractor.extract_all
   end
@@ -22,7 +22,7 @@ end
 namespace :list do
   desc "List all available versions on Docker Hub"
   task :versions do
-    require_relative "script/extract-locks"
+    require_relative "lib/metanorma_gemfile_locks"
     extractor = MetanormaGemfileLocks::Extractor.new
     versions = extractor.fetch_docker_hub_versions
     puts "Available versions on Docker Hub:"
@@ -39,7 +39,7 @@ namespace :list do
 
   desc "Check for version gaps between local and Docker Hub"
   task :gaps do
-    require_relative "script/extract-locks"
+    require_relative "lib/metanorma_gemfile_locks"
     extractor = MetanormaGemfileLocks::Extractor.new
     remote_versions = extractor.fetch_docker_hub_versions
     local_versions = Dir.glob("v*").sort.map { |d| File.basename(d)[1..] }
@@ -58,7 +58,7 @@ end
 namespace :generate do
   desc "Generate index.yaml with all versions"
   task :index do
-    require_relative "script/extract-locks"
+    require_relative "lib/metanorma_gemfile_locks"
 
     extractor = MetanormaGemfileLocks::Extractor.new
     remote_versions = extractor.fetch_docker_hub_versions

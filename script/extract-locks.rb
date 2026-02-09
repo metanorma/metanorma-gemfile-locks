@@ -55,51 +55,57 @@ module MetanormaGemfileLocks
       version_dir = File.join(File.dirname(VERSIONS_DIR), "v#{version}")
       FileUtils.mkdir_p(version_dir)
 
-      # Create a temporary container
-      container_name = "metanorma-extract-#{version}"
+      # Create extraction script that will run inside the container
+      # Search in all possible locations where Gemfile might be:
+      # - /metanorma/ (older versions)
+      # - /setup/ (newer versions)
+      # - / (even older versions)
+      # - /root/ (some intermediate versions)
+      extract_script = <<~SCRIPT
+        #!/bin/sh
+        # Find Gemfile location - search in order of likelihood
+        for path in /metanorma/Gemfile /setup/Gemfile /Gemfile /root/Gemfile; do
+          if [ -f "$path" ]; then
+            gemfile_dir=$(dirname "$path")
+            echo "GEMFILE_DIR=$gemfile_dir"
+            cat "$path"
+            echo "===GEMFILE.EOF==="
+            cat "$gemfile_dir/Gemfile.lock"
+            exit 0
+          fi
+        done
+        echo "ERROR: No Gemfile found"
+        echo "Searched: /metanorma/Gemfile /setup/Gemfile /Gemfile /root/Gemfile"
+        exit 1
+      SCRIPT
 
-      # Start container in background
-      system("docker", "run", "-d", "--name", container_name,
-             "#{DOCKER_IMAGE}:#{version}", "sleep", "3600", out: File::NULL)
+      # Run container with the extraction script
+      cmd = <<~CMD
+        docker run --rm #{DOCKER_IMAGE}:#{version} sh -c '#{extract_script}'
+      CMD
 
-      begin
-        # Try multiple possible Gemfile locations
-        # Newer versions use /setup/Gemfile, older versions use /Gemfile
-        gemfile_locations = ["/setup/Gemfile", "/Gemfile"]
-        gemfile_path = nil
+      output = `#{cmd}`
+      status = $?.exitstatus
 
-        gemfile_locations.each do |location|
-          result = system("docker", "exec", container_name, "test", "-f", location, out: File::NULL)
-          if result
-            gemfile_path = location
-            break
-          end
-        end
-
-        if gemfile_path.nil?
-          puts "  Warning: Could not find Gemfile in container, skipping v#{version}/"
-          return
-        end
-
-        # Extract directory path (e.g., /setup/ or /)
-        extract_dir = gemfile_path.sub("Gemfile", "")
-
-        # Copy Gemfile
-        system("docker", "cp", "#{container_name}:#{gemfile_path}",
-               File.join(version_dir, "Gemfile"))
-
-        # Copy Gemfile.lock
-        # Ensure extract_dir ends with / for proper path joining
-        dir_with_slash = extract_dir.end_with?("/") ? extract_dir : "#{extract_dir}/"
-        gemfile_lock_path = "#{dir_with_slash}Gemfile.lock"
-        system("docker", "cp", "#{container_name}:#{gemfile_lock_path}",
-               File.join(version_dir, "Gemfile.lock"))
-
-        puts "  Extracted to v#{version}/ (from #{extract_dir})"
-      ensure
-        # Remove container
-        system("docker", "rm", "-f", container_name, out: File::NULL)
+      if status != 0 || output.include?("ERROR: No Gemfile found")
+        raise "Failed to extract Gemfile from version #{version}:\n#{output}"
       end
+
+      # Parse output to extract Gemfile and Gemfile.lock
+      parts = output.split("===GEMFILE.EOF===")
+      if parts.size < 2
+        raise "Failed to parse Gemfile output for version #{version}"
+      end
+
+      gemfile_content = parts[0].sub(/GEMFILE_DIR=.+\n/, "")
+      gemfile_lock_content = parts[1]
+
+      # Write files
+      File.write(File.join(version_dir, "Gemfile"), gemfile_content.strip + "\n")
+      File.write(File.join(version_dir, "Gemfile.lock"), gemfile_lock_content.strip + "\n")
+
+      gemfile_dir = output[/GEMFILE_DIR=(.+)/, 1]
+      puts "  Extracted to v#{version}/ (from #{gemfile_dir})"
     end
 
     # Extract all versions
@@ -107,8 +113,19 @@ module MetanormaGemfileLocks
       @versions = fetch_docker_hub_versions
       puts "Found #{@versions.size} versions on Docker Hub"
 
+      failed_versions = []
+
       @versions.each do |version|
-        extract_version(version)
+        begin
+          extract_version(version)
+        rescue => e
+          puts "  ERROR: #{e.message}"
+          failed_versions << version
+        end
+      end
+
+      if failed_versions.any?
+        raise "\n\nFailed to extract #{failed_versions.size} version(s): #{failed_versions.join(', ')}"
       end
 
       # Clean up Docker images in batches of 5, keeping the last one for caching

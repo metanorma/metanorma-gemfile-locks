@@ -128,15 +128,14 @@ module MetanormaGemfileLocks
       if failed_versions.any?
         raise "\n\nFailed to extract #{failed_versions.size} version(s): #{failed_versions.join(', ')}"
       end
-
-      # Clean up Docker images in batches of 5, keeping the last one for caching
-      cleanup_docker_images
     end
 
     # Extract a specific version
     def extract_version(version)
       pull_docker_image(version)
       extract_from_container(version)
+      # Clean up the Docker image immediately to save disk space
+      system("docker", "rmi", "-f", "#{DOCKER_IMAGE}:#{version}", out: File::NULL)
     end
 
     # Clean up Docker images in batches of 5, keeping the last one for caching

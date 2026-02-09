@@ -36,10 +36,10 @@ jobs:
 
       - name: Extract all lock files from Docker Hub
         run: |
-          # Extract only first 5 versions for testing
-          bundle exec ruby script/extract-locks.rb -v1.14.0
-          bundle exec ruby script/extract-locks.rb -v1.14.1
-          bundle exec ruby script/extract-locks.rb -v1.14.2
+          # Extract only 5 recent versions for testing
+          bundle exec ruby script/extract-locks.rb -v1.13.5
+          bundle exec ruby script/extract-locks.rb -v1.13.7
+          bundle exec ruby script/extract-locks.rb -v1.13.9
           bundle exec ruby script/extract-locks.rb -v1.14.3
           bundle exec ruby script/extract-locks.rb -v1.14.4
 

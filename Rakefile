@@ -59,49 +59,8 @@ namespace :generate do
   desc "Generate index.yaml with all versions"
   task :index do
     require_relative "lib/metanorma_gemfile_locks"
-
     extractor = MetanormaGemfileLocks::Extractor.new
-    remote_versions = extractor.fetch_docker_hub_versions
-
-    # Get local versions, validate they have both Gemfile and Gemfile.lock
-    local_versions = Dir.glob("v*").sort.map do |d|
-      version = File.basename(d)[1..]
-      gemfile = File.join(d, "Gemfile")
-      gemfile_lock = File.join(d, "Gemfile.lock")
-
-      # Only include if both files exist
-      if File.file?(gemfile) && File.file?(gemfile_lock)
-        { version: version, updated_at: File.stat(d).mtime.iso8601 }
-      else
-        warn "Skipping v#{version}: missing Gemfile or Gemfile.lock"
-        nil
-      end
-    end.compact
-
-    # Sort by version
-    local_versions.sort_by! { |v| v[:version].split(".").map(&:to_i) }
-
-    latest_version = local_versions.last&.dig(:version)
-    missing = remote_versions - local_versions.map { |v| v[:version] }
-
-    index = {
-      "metadata" => {
-        "generated_at" => Time.now.utc.iso8601,
-        "local_count" => local_versions.size,
-        "remote_count" => remote_versions.size,
-        "latest_version" => latest_version
-      },
-      "missing_versions" => missing,
-      "versions" => local_versions.map { |v|
-        {
-          "version" => v[:version],
-          "updated_at" => v[:updated_at]
-        }
-      }
-    }
-
-    File.write("index.yaml", index.to_yaml)
-    puts "Generated index.yaml with #{local_versions.size} versions"
+    extractor.generate_index
   end
 end
 

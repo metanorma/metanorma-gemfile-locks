@@ -1,0 +1,224 @@
+= Metanorma Gemfile.lock Archive
+
+image:https://img.shields.io/github/license/metanorma/metanorma-gemfile-locks.svg[License]
+image:https://github.com/metanorma/metanorma-gemfile-locks/actions/workflows/rake.yml/badge.svg["Build", link="https://github.com/metanorma/metanorma-gemfile-locks/actions/workflows/rake.yml"]
+
+This repository stores Gemfile and Gemfile.lock files extracted from
+https://hub.docker.com/r/metanorma/metanorma[Docker Hub: metanorma/metanorma]
+Docker containers for each version of Metanorma.
+
+== Purpose
+
+When deploying or using Metanorma, you may need to install the exact same gem
+versions that are used in a specific Docker container release. This repository
+provides the Gemfile and Gemfile.lock files for each version of the
+metanorma/metanorma Docker image, allowing you to replicate the exact gem
+dependency set.
+
+The version of the lock files corresponds to the version of the
+https://rubygems.org/gems/metanorma-cli[metanorma-cli] gem, which is used to
+pin the Docker container version.
+
+== Directory structure
+
+This repository organizes files by metanorma-cli version:
+
+----
+.
+├── v1.12.5/
+│   ├── Gemfile
+│   └── Gemfile.lock
+├── v1.12.6/
+│   ├── Gemfile
+│   └── Gemfile.lock
+...
+└── v1.14.4/
+    ├── Gemfile
+    └── Gemfile.lock
+----
+
+Each version directory contains:
+
+* `Gemfile`:: The Gemfile used to build that specific Docker image version
+* `Gemfile.lock`:: The exact lock file with all gem dependencies pinned
+
+== Usage
+
+=== Using lock files with Bundler
+
+To install the exact gems from a specific Metanorma Docker version:
+
+[source,sh]
+----
+# Clone this repository
+git clone https://github.com/metanorma/metanorma-gemfile-locks.git
+cd metanorma-gemfile-locks
+
+# Copy the files for your desired version
+cp -r v1.14.4/* /path/to/your/project/
+
+# Install the exact gems
+cd /path/to/your/project
+bundle install
+----
+
+=== Finding the Docker image version
+
+To find which version of metanorma/metanorma Docker image corresponds to a
+metanorma-cli version:
+
+[source,sh]
+----
+# Inspect the Gemfile to see the metanorma-cli version
+cat v1.14.4/Gemfile
+
+# Output: gem "metanorma-cli", "= 1.14.4"
+----
+
+The Docker image tag is the same as the metanorma-cli version:
+
+[source,sh]
+----
+docker pull metanorma/metanorma:1.14.4
+----
+
+== Version mapping
+
+|===
+|metanorma-cli version |Docker image tag |Directory
+
+|1.12.5
+|`metanorma/metanorma:1.12.5`
+|v1.12.5/
+
+|1.12.6
+|`metanorma/metanorma:1.12.6`
+|v1.12.6/
+
+|1.12.8
+|`metanorma/metanorma:1.12.8`
+|v1.12.8/
+
+|1.12.10
+|`metanorma/metanorma:1.12.10`
+|v1.12.10/
+
+|1.13.0
+|`metanorma/metanorma:1.13.0`
+|v1.13.0/
+
+|1.13.2
+|`metanorma/metanorma:1.13.2`
+|v1.13.2/
+
+|1.13.3
+|`metanorma/metanorma:1.13.3`
+|v1.13.3/
+
+|1.13.4
+|`metanorma/metanorma:1.13.4`
+|v1.13.4/
+
+|1.13.5
+|`metanorma/metanorma:1.13.5`
+|v1.13.5/
+
+|1.13.7
+|`metanorma/metanorma:1.13.7`
+|v1.13.7/
+
+|1.13.8
+|`metanorma/metanorma:1.13.8`
+|v1.13.8/
+
+|1.13.9
+|`metanorma/metanorma:1.13.9`
+|v1.13.9/
+
+|1.14.3
+|`metanorma/metanorma:1.14.3`
+|v1.14.3/
+
+|1.14.4
+|`metanorma/metanorma:1.14.4`
+|v1.14.4/
+|===
+
+== Updating lock files
+
+To update or extract lock files from Docker Hub:
+
+.Prerequisites
+* Docker installed and running
+* Ruby (for running the extraction script)
+
+[source,sh]
+----
+# Install dependencies
+bundle install
+
+# Extract only missing versions (incremental mode)
+bundle exec ruby script/extract-locks.rb incremental
+# Or using rake:
+bundle exec rake extract:incremental
+
+# Replace a single version (replace mode)
+bundle exec ruby script/extract-locks.rb replace 1.14.4
+# Or using rake:
+bundle exec rake extract:replace[1.14.4]
+
+# Re-extract all versions (revamp mode)
+bundle exec ruby script/extract-locks.rb revamp
+# Or using rake:
+bundle exec rake extract:revamp
+
+# List available versions on Docker Hub
+bundle exec ruby script/extract-locks.rb list
+# Or using rake:
+bundle exec rake list:versions
+
+# Test extraction with 3 containers (for testing/index verification)
+bundle exec ruby script/extract-locks.rb test
+# Or using rake:
+bundle exec rake test:extract
+----
+
+=== Extraction modes
+
+The extraction script supports three modes:
+
+incremental:: Extract only versions that are not present locally. This is the default mode and is used for daily scheduled runs.
+
+replace:: Re-extract a single version, replacing any existing files. Use this to fix corrupted or outdated extractions.
+
+revamp:: Re-extract all versions, replacing all existing files. Use this when the data model changes or you need to refresh all versions.
+
+The extraction script will:
+
+. Fetch all version tags from Docker Hub
+. Pull each Docker image
+. Extract Gemfile and Gemfile.lock from the container
+. Organize files into versioned directories
+
+== Development
+
+=== Running tests
+
+[source,sh]
+----
+bundle exec rspec
+----
+
+=== Linting
+
+[source,sh]
+----
+bundle exec rubocop -A
+----
+
+== Copyright and license
+
+This repository is available as open source under the terms of the
+https://opensource.org/licenses/MIT[MIT License].
+
+Copyright 2025 Ribose Inc.

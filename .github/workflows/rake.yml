@@ -22,11 +22,14 @@ jobs:
           ruby-version: '3.4'
           bundler-cache: true
 
-      - name: Test CLI help command
-        run: bundle exec script/extract-locks.rb help
+      - name: Run tests
+        run: bundle exec rake spec
 
-      - name: Test CLI list command
-        run: bundle exec script/extract-locks.rb list
+      - name: Test CLI version command
+        run: bundle exec exe/mnenv version
 
-      - name: Test extraction with 3 containers (verify index.yaml generation)
-        run: bundle exec script/extract-locks.rb test
+      - name: Test CLI gemfile list command
+        run: bundle exec exe/mnenv gemfile list
+
+      - name: Test CLI info command
+        run: bundle exec exe/mnenv info gemfile 1.14.4

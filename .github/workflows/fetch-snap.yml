@@ -1,0 +1,115 @@
+name: Fetch Snap
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Fetch mode'
+        required: false
+        default: 'refresh'
+        type: choice
+        options:
+          - refresh
+          - revamp
+          - update
+      version:
+        description: 'Version to update (required for update mode)'
+        required: false
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  fetch-snap:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.4'
+          bundler-cache: true
+
+      - name: Fetch Snap versions
+        run: |
+          MODE="${{ github.event.inputs.mode || 'refresh' }}"
+          VERSION="${{ github.event.inputs.version || '' }}"
+
+          case "$MODE" in
+            refresh)
+              bundle exec exe/mnenv snap refresh
+              ;;
+            revamp)
+              bundle exec exe/mnenv snap revamp
+              ;;
+            update)
+              if [ -z "$VERSION" ]; then
+                echo "Error: version input required for update mode"
+                exit 1
+              fi
+              bundle exec exe/mnenv snap update "$VERSION"
+              ;;
+          esac
+
+      - name: Detect material changes
+        id: detect-changes
+        run: |
+          if git diff --quiet data/snap/versions.yaml; then
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "material_change=false" >> $GITHUB_OUTPUT
+          else
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+
+            CHANGES=$(git diff data/snap/versions.yaml)
+            if echo "$CHANGES" | grep -q "^[+-].*version:"; then
+              echo "material_change=true" >> $GITHUB_OUTPUT
+            elif echo "$CHANGES" | grep -q "latest_version:"; then
+              echo "material_change=true" >> $GITHUB_OUTPUT
+            else
+              echo "material_change=false" >> $GITHUB_OUTPUT
+            fi
+          fi
+
+      - name: Generate PR body
+        if: steps.detect-changes.outputs.has_changes == 'true'
+        run: |
+          cat > $GITHUB_STEP_SUMMARY << 'EOF'
+          # Snap Versions Update
+
+          ## Changes Detected
+          - **Material Change**: ${{ steps.detect-changes.outputs.material_change == 'true' && 'Yes' || 'No' }}
+          - **Mode**: ${{ github.event.inputs.mode || 'refresh' }}
+
+          ## Version Diff
+          \`\`\`diff
+          $(git diff data/snap/versions.yaml || echo "No changes")
+          \`\`\`
+          EOF
+
+      - name: Create Pull Request
+        if: steps.detect-changes.outputs.has_changes == 'true'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore: update snap version data${{ steps.detect-changes.outputs.material_change == 'true' && ' [material]' || '' }}"
+          branch: update/snap-versions
+          title: "chore${{ steps.detect-changes.outputs.material_change == 'true' && '!!!' || '' }}: update snap version data"
+          body: |
+            Automated update of Snap version data.
+
+            - **Material Change**: ${{ steps.detect-changes.outputs.material_change == 'true' && 'Yes ⚠️' || 'No' }}
+            - **Mode**: ${{ github.event.inputs.mode || 'refresh' }}
+
+            [View full details in the workflow summary](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          labels: |
+            automated
+            dependencies
+            snap
+            ${{ steps.detect-changes.outputs.material_change == 'true' && 'material-change' || '' }}
+          draft: ${{ steps.detect-changes.outputs.material_change == 'false' }}
+          delete-branch: true

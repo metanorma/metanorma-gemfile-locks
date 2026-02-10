@@ -1,0 +1,567 @@
+---
+metadata:
+  generated_at: '2026-02-10T11:24:35Z'
+  source: :homebrew
+  count: 112
+  latest_version: 1.13.2
+versions:
+- version: 1.1.0
+  published_at:
+  parsed_at:
+  tag_name: v1.1.0
+  commit_sha: 0ffdd4cbf887a477179d9c122da66882ce10fb7f
+- version: 1.1.3
+  published_at:
+  parsed_at:
+  tag_name: v1.1.3
+  commit_sha: e085b96b8315d335cb027a4957a178662c93da5e
+- version: 1.1.7
+  published_at:
+  parsed_at:
+  tag_name: v1.1.7
+  commit_sha: d0ffde83ccf4e8ac2342cc3953e708d36511fee4
+- version: 1.2.11
+  published_at:
+  parsed_at:
+  tag_name: v1.2.11
+  commit_sha: 8ceae227db14559fa60fa88aefe2c5115c5af06d
+- version: 1.2.12
+  published_at:
+  parsed_at:
+  tag_name: v1.2.12
+  commit_sha: a7d7fd93d220150c359826075375ba7a94d81f65
+- version: 1.3.1
+  published_at:
+  parsed_at:
+  tag_name: v1.3.1
+  commit_sha: 4df97a1e0ee6b81f4d8d8820da2bc8f621341641
+- version: 1.3.2
+  published_at:
+  parsed_at:
+  tag_name: v1.3.2
+  commit_sha: 82474736cef5bc1be7606b7bbca6caa0ff8bc83c
+- version: 1.3.4
+  published_at:
+  parsed_at:
+  tag_name: v1.3.4
+  commit_sha: 60d944d724981f665e96cfc40ccfc2aba6d239e9
+- version: 1.3.5
+  published_at:
+  parsed_at:
+  tag_name: v1.3.5
+  commit_sha: a3ab4194477c469aa8f7d92eb23fbaa4d7e80dd9
+- version: 1.3.6
+  published_at:
+  parsed_at:
+  tag_name: v1.3.6
+  commit_sha: 3b7cc2476fbe594f5bd4d57e13caab154a5ace41
+- version: 1.3.8
+  published_at:
+  parsed_at:
+  tag_name: v1.3.8
+  commit_sha: 36fd0f85db3ccd029696aa967f1ec7df0986d70b
+- version: 1.3.9
+  published_at:
+  parsed_at:
+  tag_name: v1.3.9
+  commit_sha: 9f5d38adc7f88d9c2230cf1c139ab68b4d0b4975
+- version: 1.4.4
+  published_at:
+  parsed_at:
+  tag_name: v1.4.4
+  commit_sha: c67335170378db728ceab1eeca44ed45a3207e40
+- version: 1.4.5
+  published_at:
+  parsed_at:
+  tag_name: v1.4.5
+  commit_sha: 81d90f5f73deb6bdb94feac6039832275899b890
+- version: 1.4.7
+  published_at:
+  parsed_at:
+  tag_name: v1.4.7
+  commit_sha: e344ef85edae586aeb652261c70c84cea8737001
+- version: 1.4.8
+  published_at:
+  parsed_at:
+  tag_name: v1.4.8
+  commit_sha: 3499dee1229fddd5ec915c35649981ff2c4eea4b
+- version: 1.4.9
+  published_at:
+  parsed_at:
+  tag_name: v1.4.9
+  commit_sha: f63a2c3875dfc6c3aaaf88578262b6b03913e458
+- version: 1.4.11
+  published_at:
+  parsed_at:
+  tag_name: v1.4.11
+  commit_sha: 03ca6bfa0627de86e3c489b4c74dad76daefc42b
+- version: 1.4.12
+  published_at:
+  parsed_at:
+  tag_name: v1.4.12
+  commit_sha: b794464c1945f59aedf6068b6bceb846451f8a6a
+- version: 1.4.13
+  published_at:
+  parsed_at:
+  tag_name: v1.4.13
+  commit_sha: 90a7ce9f36de034a5bbdfa43d861a954b7d3257a
+- version: 1.4.14
+  published_at:
+  parsed_at:
+  tag_name: v1.4.14
+  commit_sha: 8a073eb7c4fbdbba236a53d5a41957407181e547
+- version: 1.4.15
+  published_at:
+  parsed_at:
+  tag_name: v1.4.15
+  commit_sha: dc1e628098b0a514ee31ef30f4aeb7a82c5938b1
+- version: 1.4.16
+  published_at:
+  parsed_at:
+  tag_name: v1.4.16
+  commit_sha: 9afb5e33175f3ce6c60726c849a58b6883ba2085
+- version: 1.4.17
+  published_at:
+  parsed_at:
+  tag_name: v1.4.17
+  commit_sha: 403d57deff30e6c5ae479fe350ef450d1387dacf
+- version: 1.4.18
+  published_at:
+  parsed_at:
+  tag_name: v1.4.18
+  commit_sha: ca00054676627d9e56560c38d9335c03609a93dd
+- version: 1.5.0
+  published_at:
+  parsed_at:
+  tag_name: v1.5.0
+  commit_sha: e6fa23262e0bb12359126e68c1e2437e3d45bf92
+- version: 1.5.1
+  published_at:
+  parsed_at:
+  tag_name: v1.5.1
+  commit_sha: 00fdec451691937a2737d0bd2d6b711aa6c5b749
+- version: 1.5.2
+  published_at:
+  parsed_at:
+  tag_name: v1.5.2
+  commit_sha: ca0408730d424d52f2f92582afe526fa7df48f31
+- version: 1.5.3
+  published_at:
+  parsed_at:
+  tag_name: v1.5.3
+  commit_sha: 4abbeffd9801ab0fb0a0333f3cd6c7fd65bd9c6e
+- version: 1.5.4
+  published_at:
+  parsed_at:
+  tag_name: v1.5.4
+  commit_sha: 4819ba65c7533cd75071329d6c8edced989aba06
+- version: 1.5.8
+  published_at:
+  parsed_at:
+  tag_name: v1.5.8
+  commit_sha: c26844935bfd0d43d7861693b592a1488d8104ef
+- version: 1.5.9
+  published_at:
+  parsed_at:
+  tag_name: v1.5.9
+  commit_sha: c825df72cab68e07ebc8b9bf1818a02b5ba457af
+- version: 1.5.11
+  published_at:
+  parsed_at:
+  tag_name: v1.5.11
+  commit_sha: e27f989d5ffa1b42e2a723897d46e1daa798e9b6
+- version: 1.5.16
+  published_at:
+  parsed_at:
+  tag_name: v1.5.16
+  commit_sha: d637dcc08bd15589f9fcfae85b5caca6b359fc12
+- version: 1.5.17
+  published_at:
+  parsed_at:
+  tag_name: v1.5.17
+  commit_sha: fb60c7b4bb53b53a885cec8741a76f8191756de6
+- version: 1.5.18
+  published_at:
+  parsed_at:
+  tag_name: v1.5.18
+  commit_sha: 4ffa7f72a48479551861925f824ac19083e8d8c8
+- version: 1.5.19
+  published_at:
+  parsed_at:
+  tag_name: v1.5.19
+  commit_sha: 6348df9f9cd46d48e5d3f8cca1057fe4788c0973
+- version: 1.5.20
+  published_at:
+  parsed_at:
+  tag_name: v1.5.20
+  commit_sha: 6fce94b3088d585fb820ab22d27098f0e51152e2
+- version: 1.5.21
+  published_at:
+  parsed_at:
+  tag_name: v1.5.21
+  commit_sha: 9d949c6c8bf1439fbee0b1da408ef10b168d747a
+- version: 1.5.22
+  published_at:
+  parsed_at:
+  tag_name: v1.5.22
+  commit_sha: 2436b4d192f9c41d00f27b97ca1f4a17f7cb3a13
+- version: 1.5.23
+  published_at:
+  parsed_at:
+  tag_name: v1.5.23
+  commit_sha: 35880f8123229dda23468e724d1379d09aa4dab4
+- version: 1.5.24
+  published_at:
+  parsed_at:
+  tag_name: v1.5.24
+  commit_sha: 96583a2a4d07456e3fc23e7469edf69fa89ba0ef
+- version: 1.6.0
+  published_at:
+  parsed_at: '2026-02-10T08:03:18Z'
+  tag_name: v1.6.0
+  commit_sha:
+- version: 1.6.1
+  published_at:
+  parsed_at: '2026-02-10T08:03:18Z'
+  tag_name: v1.6.1
+  commit_sha:
+- version: 1.6.2
+  published_at:
+  parsed_at: '2026-02-10T08:03:18Z'
+  tag_name: v1.6.2
+  commit_sha:
+- version: 1.6.3
+  published_at:
+  parsed_at: '2026-02-10T08:03:18Z'
+  tag_name: v1.6.3
+  commit_sha:
+- version: 1.6.4
+  published_at:
+  parsed_at: '2026-02-10T08:03:18Z'
+  tag_name: v1.6.4
+  commit_sha:
+- version: 1.6.5
+  published_at:
+  parsed_at: '2026-02-10T08:03:18Z'
+  tag_name: v1.6.5
+  commit_sha:
+- version: 1.6.6
+  published_at:
+  parsed_at: '2026-02-10T08:03:18Z'
+  tag_name: v1.6.6
+  commit_sha:
+- version: 1.6.7
+  published_at:
+  parsed_at: '2026-02-10T08:03:18Z'
+  tag_name: v1.6.7
+  commit_sha:
+- version: 1.6.8
+  published_at:
+  parsed_at: '2026-02-10T08:03:18Z'
+  tag_name: v1.6.8
+  commit_sha:
+- version: 1.6.9
+  published_at:
+  parsed_at: '2026-02-10T08:03:18Z'
+  tag_name: v1.6.9
+  commit_sha:
+- version: 1.6.10
+  published_at:
+  parsed_at: '2026-02-10T08:03:18Z'
+  tag_name: v1.6.10
+  commit_sha:
+- version: 1.6.11
+  published_at:
+  parsed_at: '2026-02-10T08:03:18Z'
+  tag_name: v1.6.11
+  commit_sha:
+- version: 1.6.12
+  published_at:
+  parsed_at: '2026-02-10T08:03:18Z'
+  tag_name: v1.6.12
+  commit_sha:
+- version: 1.6.13
+  published_at:
+  parsed_at: '2026-02-10T08:03:18Z'
+  tag_name: v1.6.13
+  commit_sha:
+- version: 1.6.14
+  published_at:
+  parsed_at: '2026-02-10T08:03:18Z'
+  tag_name: v1.6.14
+  commit_sha:
+- version: 1.6.15
+  published_at:
+  parsed_at: '2026-02-10T08:03:18Z'
+  tag_name: v1.6.15
+  commit_sha:
+- version: 1.7.0
+  published_at:
+  parsed_at: '2026-02-10T08:03:18Z'
+  tag_name: v1.7.0
+  commit_sha:
+- version: 1.7.1
+  published_at:
+  parsed_at: '2026-02-10T08:03:18Z'
+  tag_name: v1.7.1
+  commit_sha:
+- version: 1.7.2
+  published_at:
+  parsed_at: '2026-02-10T08:03:18Z'
+  tag_name: v1.7.2
+  commit_sha:
+- version: 1.7.3
+  published_at:
+  parsed_at: '2026-02-10T08:03:18Z'
+  tag_name: v1.7.3
+  commit_sha:
+- version: 1.7.4
+  published_at:
+  parsed_at: '2026-02-10T08:03:18Z'
+  tag_name: v1.7.4
+  commit_sha:
+- version: 1.7.5
+  published_at:
+  parsed_at: '2026-02-10T08:03:18Z'
+  tag_name: v1.7.5
+  commit_sha:
+- version: 1.7.6
+  published_at:
+  parsed_at: '2026-02-10T08:03:18Z'
+  tag_name: v1.7.6
+  commit_sha:
+- version: 1.8.2
+  published_at:
+  parsed_at: '2026-02-10T08:03:18Z'
+  tag_name: v1.8.2
+  commit_sha:
+- version: 1.8.3
+  published_at:
+  parsed_at: '2026-02-10T08:03:18Z'
+  tag_name: v1.8.3
+  commit_sha:
+- version: 1.8.4
+  published_at:
+  parsed_at: '2026-02-10T08:03:18Z'
+  tag_name: v1.8.4
+  commit_sha:
+- version: 1.8.5
+  published_at:
+  parsed_at: '2026-02-10T08:03:18Z'
+  tag_name: v1.8.5
+  commit_sha:
+- version: 1.8.6
+  published_at:
+  parsed_at: '2026-02-10T08:03:18Z'
+  tag_name: v1.8.6
+  commit_sha:
+- version: 1.8.7
+  published_at:
+  parsed_at: '2026-02-10T08:03:18Z'
+  tag_name: v1.8.7
+  commit_sha:
+- version: 1.8.8
+  published_at:
+  parsed_at: '2026-02-10T08:03:18Z'
+  tag_name: v1.8.8
+  commit_sha:
+- version: 1.8.9
+  published_at:
+  parsed_at: '2026-02-10T08:03:18Z'
+  tag_name: v1.8.9
+  commit_sha:
+- version: 1.8.10
+  published_at:
+  parsed_at: '2026-02-10T08:03:18Z'
+  tag_name: v1.8.10
+  commit_sha:
+- version: 1.8.11
+  published_at:
+  parsed_at: '2026-02-10T08:03:18Z'
+  tag_name: v1.8.11
+  commit_sha:
+- version: 1.9.0
+  published_at:
+  parsed_at: '2026-02-10T08:03:18Z'
+  tag_name: v1.9.0
+  commit_sha:
+- version: 1.9.1
+  published_at:
+  parsed_at: '2026-02-10T08:03:18Z'
+  tag_name: v1.9.1
+  commit_sha:
+- version: 1.9.2
+  published_at:
+  parsed_at: '2026-02-10T08:03:18Z'
+  tag_name: v1.9.2
+  commit_sha:
+- version: 1.9.3
+  published_at:
+  parsed_at: '2026-02-10T08:03:18Z'
+  tag_name: v1.9.3
+  commit_sha:
+- version: 1.9.4
+  published_at:
+  parsed_at:
+  tag_name: v1.9.4
+  commit_sha: d36e03399b4cb12a6594c0e787612f48188c38f9
+- version: 1.9.5
+  published_at:
+  parsed_at: '2026-02-10T08:03:18Z'
+  tag_name: v1.9.5
+  commit_sha:
+- version: 1.9.6
+  published_at:
+  parsed_at: '2026-02-10T08:03:18Z'
+  tag_name: v1.9.6
+  commit_sha:
+- version: 1.9.7
+  published_at:
+  parsed_at: '2026-02-10T08:03:18Z'
+  tag_name: v1.9.7
+  commit_sha:
+- version: 1.9.8
+  published_at:
+  parsed_at:
+  tag_name: v1.9.8
+  commit_sha: ff1c2e1a405e1c1123eadb6fd7bce02750c20c62
+- version: 1.10.0
+  published_at:
+  parsed_at: '2026-02-10T08:03:18Z'
+  tag_name: v1.10.0
+  commit_sha:
+- version: 1.10.1
+  published_at:
+  parsed_at: '2026-02-10T08:03:18Z'
+  tag_name: v1.10.1
+  commit_sha:
+- version: 1.10.2
+  published_at:
+  parsed_at: '2026-02-10T08:03:18Z'
+  tag_name: v1.10.2
+  commit_sha:
+- version: 1.10.3
+  published_at:
+  parsed_at: '2026-02-10T08:03:18Z'
+  tag_name: v1.10.3
+  commit_sha:
+- version: 1.10.5
+  published_at:
+  parsed_at: '2026-02-10T08:03:18Z'
+  tag_name: v1.10.5
+  commit_sha:
+- version: 1.10.6
+  published_at:
+  parsed_at: '2026-02-10T08:03:18Z'
+  tag_name: v1.10.6
+  commit_sha:
+- version: 1.10.7
+  published_at:
+  parsed_at: '2026-02-10T08:03:18Z'
+  tag_name: v1.10.7
+  commit_sha:
+- version: 1.10.8
+  published_at:
+  parsed_at: '2026-02-10T08:03:18Z'
+  tag_name: v1.10.8
+  commit_sha:
+- version: 1.10.9
+  published_at:
+  parsed_at: '2026-02-10T08:03:18Z'
+  tag_name: v1.10.9
+  commit_sha:
+- version: 1.10.10
+  published_at:
+  parsed_at: '2026-02-10T08:03:18Z'
+  tag_name: v1.10.10
+  commit_sha:
+- version: 1.10.11
+  published_at:
+  parsed_at: '2026-02-10T08:03:18Z'
+  tag_name: v1.10.11
+  commit_sha:
+- version: 1.11.0
+  published_at:
+  parsed_at: '2026-02-10T08:03:18Z'
+  tag_name: v1.11.0
+  commit_sha:
+- version: 1.11.1
+  published_at:
+  parsed_at:
+  tag_name: v1.11.1
+  commit_sha: 6731525edc620afa9473be43af8f13d801ba56e8
+- version: 1.11.2
+  published_at:
+  parsed_at:
+  tag_name: v1.11.2
+  commit_sha: ac4971f217909bd819e3ab75f20460a7bc96c31a
+- version: 1.11.3
+  published_at:
+  parsed_at: '2026-02-10T08:03:18Z'
+  tag_name: v1.11.3
+  commit_sha:
+- version: 1.11.4
+  published_at:
+  parsed_at: '2026-02-10T08:03:18Z'
+  tag_name: v1.11.4
+  commit_sha:
+- version: 1.11.5
+  published_at:
+  parsed_at: '2026-02-10T08:03:18Z'
+  tag_name: v1.11.5
+  commit_sha:
+- version: 1.12.1
+  published_at:
+  parsed_at:
+  tag_name: v1.12.1
+  commit_sha: edfdd6096e29975d04879f056a67cb6d94a13d76
+- version: 1.12.3
+  published_at:
+  parsed_at:
+  tag_name: v1.12.3
+  commit_sha: ea4c3f6b31a7c4107c2a2010a201ddb71b848a23
+- version: 1.12.4
+  published_at:
+  parsed_at:
+  tag_name: v1.12.4
+  commit_sha: e49dcccc2e2f0f013f52c465732db880747108b6
+- version: 1.12.5
+  published_at:
+  parsed_at:
+  tag_name: v1.12.5
+  commit_sha: 3e9bd98615d75381766477a0e00d90b7ffb6df1d
+- version: 1.12.6
+  published_at:
+  parsed_at:
+  tag_name: v1.12.6
+  commit_sha: 1d1ad7a418ab3c375ee66afe74053973de73637e
+- version: 1.12.7
+  published_at:
+  parsed_at:
+  tag_name: v1.12.7
+  commit_sha: f46a94a6adb48307272303b286a5639ab0bafdd3
+- version: 1.12.8
+  published_at:
+  parsed_at:
+  tag_name: v1.12.8
+  commit_sha: 3d0a658d1d2ea8928ba75ecdd1ec77ea209e69df
+- version: 1.12.9
+  published_at:
+  parsed_at:
+  tag_name: v1.12.9
+  commit_sha: 63414a7fe3b526bd1711079bd19e575a84a4ca61
+- version: 1.12.10
+  published_at:
+  parsed_at:
+  tag_name: v1.12.10
+  commit_sha: 1c905f9f25f2ff168f20a1ceb36ece3a0f52605e
+- version: 1.13.0
+  published_at:
+  parsed_at:
+  tag_name: v1.13.0
+  commit_sha: 9a7ab67a52004d8b7a2729b35b8f74e5bb8a476c
+- version: 1.13.2
+  published_at:
+  parsed_at:
+  tag_name: v1.13.2
+  commit_sha: 99b12631fa5b5c4a078e0cdf7dd4376dd7587329

@@ -1,68 +1,279 @@
-= Metanorma Gemfile.lock Archive
+= Metanorma Versions
 
-image:https://img.shields.io/github/license/metanorma/metanorma-gemfile-locks.svg[License]
-image:https://github.com/metanorma/metanorma-gemfile-locks/actions/workflows/rake.yml/badge.svg["Build", link="https://github.com/metanorma/metanorma-gemfile-locks/actions/workflows/rake.yml"]
+image:https://img.shields.io/github/license/metanorma/versions[License]
+image:https://github.com/metanorma/versions/actions/workflows/rake.yml/badge.svg[Rake]
 
-This repository stores Gemfile and Gemfile.lock files extracted from
-https://hub.docker.com/r/metanorma/metanorma[Docker Hub: metanorma/metanorma]
-Docker containers for each version of Metanorma.
+Version discovery and management for Metanorma across multiple package sources.
 
 == Purpose
 
+This repository provides a unified interface for discovering and managing Metanorma versions from various sources:
+
+* **Gemfile (Docker)** - Docker Hub images with Gemfile/Gemfile.lock.archived extraction
+* **Snap** - Snapcraft snap packages with revision tracking
+* **Homebrew** - macOS Homebrew formula versions from GitHub tags
+* **Chocolatey** - Windows Chocolatey packages
+
+This enables link:{https://github.com/metanorma/actions-mn/setup}[actions-mn/setup] to provide version selection across all platforms.
+
+=== Historical Gemfile Lock Archive
+
+This repository also stores Gemfile and Gemfile.lock.archived files extracted from
+https://hub.docker.com/r/metanorma/metanorma[Docker Hub: metanorma/metanorma]
+Docker containers for each version of Metanorma.
+
 When deploying or using Metanorma, you may need to install the exact same gem
 versions that are used in a specific Docker container release. This repository
-provides the Gemfile and Gemfile.lock files for each version of the
+provides the Gemfile and Gemfile.lock.archived files for each version of the
 metanorma/metanorma Docker image, allowing you to replicate the exact gem
 dependency set.
 
-The version of the lock files corresponds to the version of the
-https://rubygems.org/gems/metanorma-cli[metanorma-cli] gem, which is used to
-pin the Docker container version.
+== Features
 
-== Directory structure
+* *Unified CLI* - Single `mnenv` command to query and manage versions from all sources
+* *YAML Storage* - Version data stored in `data/` directory for easy inspection
+* *JSON Output* - CLI commands output JSON for GitHub Actions consumption
+* *Extraction Modes* - Incremental, replace, and revamp modes for Gemfile extraction
+* *Model-Driven OOP* - Built with lutaml-model for proper data serialization
 
-This repository organizes files by metanorma-cli version:
+== Setting Up
 
+Clone this repository and install dependencies:
+
+[source,shell]
 ----
-.
-├── v1.12.5/
-│   ├── Gemfile
-│   └── Gemfile.lock
-├── v1.12.6/
-│   ├── Gemfile
-│   └── Gemfile.lock
-...
-└── v1.14.4/
-    ├── Gemfile
-    └── Gemfile.lock
+git clone https://github.com/metanorma/versions.git
+cd versions
+bundle install
 ----
-
-Each version directory contains:
-
-* `Gemfile`:: The Gemfile used to build that specific Docker image version
-* `Gemfile.lock`:: The exact lock file with all gem dependencies pinned
 
 == Usage
 
-=== Using lock files with Bundler
+=== CLI Commands
+
+The `mnenv` command provides subcommands for each platform:
+
+[source,shell]
+----
+# List Gemfile (Ruby) versions
+bundle exec exe/mnenv gemfile list
+
+# List Snap versions
+bundle exec exe/mnenv snap list
+
+# List Homebrew versions
+bundle exec exe/mnenv homebrew list
+
+# List Chocolatey versions
+bundle exec exe/mnenv chocolatey list
+
+# List all versions in text format
+bundle exec exe/mnenv list-all
+
+# List all versions in JSON format
+bundle exec exe/mnenv list-all -f json
+
+# Get info for a specific version
+bundle exec exe/mnenv info gemfile 1.14.4
+
+# Show mnenv version
+bundle exec exe/mnenv version
+----
+
+=== Updating Version Data
+
+Each platform supports three modes of updating version data:
+
+* *refresh* - Incremental mode: fetch only new versions not present locally
+* *revamp* - Re-fetch all versions, replacing existing data
+* *update VERSION* - Update a specific version
+
+.Gemfile (Docker) Updates
+[source,shell]
+----
+# Extract only missing versions (incremental mode)
+bundle exec exe/mnenv gemfile refresh
+
+# Replace a single version
+bundle exec exe/mnenv gemfile update 1.14.4
+
+# Re-extract all versions
+bundle exec exe/mnenv gemfile revamp
+----
+
+.Snap Updates
+[source,shell]
+----
+# Fetch and add new Snap versions
+bundle exec exe/mnenv snap refresh
+
+# Update a specific Snap version
+bundle exec exe/mnenv snap update 1.14.4
+
+# Re-fetch all Snap versions
+bundle exec exe/mnenv snap revamp
+----
+
+.Homebrew Updates
+[source,shell]
+----
+# Fetch and add new Homebrew versions
+bundle exec exe/mnenv homebrew refresh
+
+# Update a specific Homebrew version
+bundle exec exe/mnenv homebrew update 1.13.0
+
+# Re-fetch all Homebrew versions
+bundle exec exe/mnenv homebrew revamp
+----
+
+.Chocolatey Updates
+[source,shell]
+----
+# Fetch and add new Chocolatey versions
+bundle exec exe/mnenv chocolatey refresh
+
+# Update a specific Chocolatey version
+bundle exec exe/mnenv chocolatey update 1.14.4
+
+# Re-fetch all Chocolatey versions
+bundle exec exe/mnenv chocolatey revamp
+----
+
+# Re-extract all versions
+mnenv gemfile revamp
+----
+
+.Extraction Modes
+
+incremental:: Extract only versions that are not present locally. This is the default mode and is used for daily scheduled runs.
+
+replace:: Re-extract a single version, replacing any existing files. Use this to fix corrupted or outdated extractions.
+
+revamp:: Re-extract all versions, replacing all existing files. Use this when the data model changes or you need to refresh all versions.
+
+=== Ruby API
+
+Query versions programmatically:
+
+[source,ruby]
+----
+require 'mnenv'
+
+# Gemfile versions
+gemfile_repo = Mnenv::GemfileRepository.new
+gemfile_versions = gemfile_repo.all
+gemfile_latest = gemfile_repo.latest
+
+# Snap versions
+snap_repo = Mnenv::SnapRepository.new
+snap_versions = snap_repo.all
+
+# Homebrew versions
+homebrew_repo = Mnenv::HomebrewRepository.new
+homebrew_versions = homebrew_repo.all
+
+# Chocolatey versions
+chocolatey_repo = Mnenv::ChocolateyRepository.new
+chocolatey_versions = chocolatey_repo.all
+----
+
+=== JSON Output
+
+For GitHub Actions integration, output JSON format:
+
+[source,shell]
+----
+mnenv list-all -f json
+----
+
+Returns:
+
+[source,json]
+----
+{
+  "gemfile": {
+    "count": 124,
+    "latest": "1.14.4",
+    "versions": [...]
+  },
+  "snap": {
+    "count": 14,
+    "latest": "1.14.4",
+    "versions": [...]
+  },
+  "homebrew": {
+    "count": 56,
+    "latest": "1.13.0",
+    "versions": [...]
+  },
+  "chocolatey": {
+    "count": 144,
+    "latest": "1.14.4",
+    "versions": [...]
+  }
+}
+----
+
+== Data Structure
+
+Version data is stored in YAML files under `data/`:
+
+----
+data/
+├── gemfile/
+│   ├── versions.yaml          # Gemfile version metadata
+│   └── v1.14.4/               # Gemfile extraction per version
+│       ├── Gemfile
+│       └── Gemfile.lock.archived
+├── snap/
+│   └── versions.yaml          # Snap versions with revision data
+├── homebrew/
+│   └── versions.yaml          # Homebrew versions from tags
+└── chocolatey/
+    └── versions.yaml          # Chocolatey versions
+----
+
+=== Version Object Structure
+
+Each version object contains:
+
+[source,ruby]
+----
+{
+  "version": "1.14.4",
+  "published_at": "2025-01-15T10:30:00Z",
+  "parsed_at": "2025-01-15T10:30:00Z"
+}
+----
+
+Additional fields per source:
+
+* **Gemfile** - `gemfile_exists`, `gemfile_path`, `gemfile_lock_path`
+* **Snap** - `revision`, `arch`, `channel`
+* **Homebrew** - `tag_name`, `commit_sha`
+* **Chocolatey** - `package_name`, `is_pre_release`
+
+=== Using Lock Files with Bundler
 
 To install the exact gems from a specific Metanorma Docker version:
 
 [source,sh]
 ----
 # Clone this repository
-git clone https://github.com/metanorma/metanorma-gemfile-locks.git
-cd metanorma-gemfile-locks
+git clone https://github.com/metanorma/versions.git
+cd versions
 
 # Copy the files for your desired version
-cp -r v1.14.4/* /path/to/your/project/
+cp data/gemfile/v1.14.4/Gemfile /path/to/your/project/
+cp data/gemfile/v1.14.4/Gemfile.lock.archived /path/to/your/project/Gemfile.lock
 
 # Install the exact gems
 cd /path/to/your/project
 bundle install
 ----
 
-=== Finding the Docker image version
+=== Finding the Docker Image Version
 
 To find which version of metanorma/metanorma Docker image corresponds to a
 metanorma-cli version:
@@ -70,7 +281,7 @@ metanorma-cli version:
 [source,sh]
 ----
 # Inspect the Gemfile to see the metanorma-cli version
-cat v1.14.4/Gemfile
+cat data/gemfile/v1.14.4/Gemfile
 
 # Output: gem "metanorma-cli", "= 1.14.4"
 ----
@@ -82,143 +293,82 @@ The Docker image tag is the same as the metanorma-cli version:
 docker pull metanorma/metanorma:1.14.4
 ----
 
-== Version mapping
-
-|===
-|metanorma-cli version |Docker image tag |Directory
-
-|1.12.5
-|`metanorma/metanorma:1.12.5`
-|v1.12.5/
-
-|1.12.6
-|`metanorma/metanorma:1.12.6`
-|v1.12.6/
-
-|1.12.8
-|`metanorma/metanorma:1.12.8`
-|v1.12.8/
-
-|1.12.10
-|`metanorma/metanorma:1.12.10`
-|v1.12.10/
-
-|1.13.0
-|`metanorma/metanorma:1.13.0`
-|v1.13.0/
-
-|1.13.2
-|`metanorma/metanorma:1.13.2`
-|v1.13.2/
-
-|1.13.3
-|`metanorma/metanorma:1.13.3`
-|v1.13.3/
-
-|1.13.4
-|`metanorma/metanorma:1.13.4`
-|v1.13.4/
-
-|1.13.5
-|`metanorma/metanorma:1.13.5`
-|v1.13.5/
-
-|1.13.7
-|`metanorma/metanorma:1.13.7`
-|v1.13.7/
-
-|1.13.8
-|`metanorma/metanorma:1.13.8`
-|v1.13.8/
-
-|1.13.9
-|`metanorma/metanorma:1.13.9`
-|v1.13.9/
-
-|1.14.3
-|`metanorma/metanorma:1.14.3`
-|v1.14.3/
-
-|1.14.4
-|`metanorma/metanorma:1.14.4`
-|v1.14.4/
-|===
-
-== Updating lock files
-
-To update or extract lock files from Docker Hub:
-
-.Prerequisites
-* Docker installed and running
-* Ruby (for running the extraction script)
-
-[source,sh]
-----
-# Install dependencies
-bundle install
-
-# Extract only missing versions (incremental mode)
-bundle exec ruby script/extract-locks.rb incremental
-# Or using rake:
-bundle exec rake extract:incremental
-
-# Replace a single version (replace mode)
-bundle exec ruby script/extract-locks.rb replace 1.14.4
-# Or using rake:
-bundle exec rake extract:replace[1.14.4]
-
-# Re-extract all versions (revamp mode)
-bundle exec ruby script/extract-locks.rb revamp
-# Or using rake:
-bundle exec rake extract:revamp
-
-# List available versions on Docker Hub
-bundle exec ruby script/extract-locks.rb list
-# Or using rake:
-bundle exec rake list:versions
-
-# Test extraction with 3 containers (for testing/index verification)
-bundle exec ruby script/extract-locks.rb test
-# Or using rake:
-bundle exec rake test:extract
-----
-
-=== Extraction modes
-
-The extraction script supports three modes:
-
-incremental:: Extract only versions that are not present locally. This is the default mode and is used for daily scheduled runs.
-
-replace:: Re-extract a single version, replacing any existing files. Use this to fix corrupted or outdated extractions.
-
-revamp:: Re-extract all versions, replacing all existing files. Use this when the data model changes or you need to refresh all versions.
-
-The extraction script will:
-
-. Fetch all version tags from Docker Hub
-. Pull each Docker image
-. Extract Gemfile and Gemfile.lock from the container
-. Organize files into versioned directories
-
 == Development
 
-=== Running tests
+=== Running Tests
 
-[source,sh]
+[source,shell]
 ----
-bundle exec rspec
-----
-
-=== Linting
-
-[source,sh]
-----
-bundle exec rubocop -A
+bundle exec rake test
 ----
 
-== Copyright and license
+=== Running Rake Tasks
 
-This repository is available as open source under the terms of the
-https://opensource.org/licenses/MIT[MIT License].
+[source,shell]
+----
+# List available Rake tasks
+bundle exec rake -T
 
-Copyright 2025 Ribose Inc.
+# Generate index
+bundle exec rake generate_index
+----
+
+=== Code Quality
+
+[source,shell]
+----
+# Run Rubocop
+bundle exec rubocop
+
+# Auto-correct issues
+bundle exec rubocop --autocorrect
+----
+
+== Architecture
+
+This repository follows a model-driven OOP architecture using lutaml-model:
+
+----
+Mnenv
+├── ArtifactVersion  (base version class with LutaML serialization)
+├── Repository       (YAML CRUD operations)
+├── Fetcher          (API communication)
+├── Logger           (logging utility)
+├── JsonFormatter    (JSON output)
+└── Cli              (Thor CLI with subcommands)
+
+Modules by platform:
+├── Gemfile/
+│   ├── Version      (Gemfile-specific with gemfile paths)
+│   ├── Repository   (Gemfile YAML storage)
+│   ├── Fetcher      (Docker Hub API)
+│   └── Extractor    (Gemfile extraction from containers)
+├── Snap/
+│   ├── Version      (Snap-specific with revision/arch)
+│   ├── Repository   (Snap YAML storage)
+│   └── Fetcher      (Snapcraft API)
+├── Homebrew/
+│   ├── Version      (Homebrew-specific with tag/commit)
+│   ├── Repository   (Homebrew YAML storage)
+│   └── Fetcher      (GitHub tags API)
+└── Chocolatey/
+    ├── Version      (Chocolatey-specific with pre-release flag)
+    ├── Repository   (Chocolatey YAML storage)
+    └── Fetcher      (Chocolatey API)
+----
+
+== Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b my-amazing-feature`)
+3. Commit your changes (`git commit -am 'Add some amazing feature'`)
+4. Push to the branch (`git push origin my-amazing-feature`)
+5. Open a Pull Request
+
+== License
+
+This repository is available as open source under the terms of the {file-license}[MIT License].
+
+== Copyright
+
+Copyright (c) 2025 Ribose Inc.

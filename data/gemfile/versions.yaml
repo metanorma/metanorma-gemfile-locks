@@ -745,7 +745,7 @@ versions:
   gemfile_lock_path: v1.14.3/Gemfile.lock.archived
 - version: 1.14.4
   published_at: '2025-12-03T09:52:26Z'
-  parsed_at:
-  gemfile_exists: false
-  gemfile_path:
-  gemfile_lock_path:
+  parsed_at: '2026-02-12T08:20:54Z'
+  gemfile_exists: true
+  gemfile_path: v1.14.4/Gemfile
+  gemfile_lock_path: v1.14.4/Gemfile.lock.archived

@@ -47,7 +47,7 @@ namespace :list do
     extractor = MetanormaGemfileLocks::Extractor.new
     versions = extractor.fetch_docker_hub_versions
     puts "Available versions on Docker Hub:"
-    versions.each { |v| puts "  #{v}" }
+    versions.each { |v| puts "  #{v.name}" }
   end
 
   desc "List all locally extracted versions"
@@ -62,7 +62,7 @@ namespace :list do
   task :gaps do
     require_relative "lib/metanorma_gemfile_locks"
     extractor = MetanormaGemfileLocks::Extractor.new
-    remote_versions = extractor.fetch_docker_hub_versions
+    remote_versions = extractor.fetch_docker_hub_versions.map(&:name)
     local_versions = Dir.glob("v*").sort.map { |d| File.basename(d)[1..] }
 
     missing = remote_versions - local_versions

@@ -69,25 +69,67 @@ jobs:
               ;;
           esac
 
+      - name: Stash old index.yaml for comparison
+        run: |
+          if [ -f index.yaml ]; then
+            cp index.yaml index.yaml.old
+          fi
+
       - name: Generate index.yaml
         run: |
           bundle exec rake generate_index
 
-      - name: Check for changes
-        id: git-check
+      - name: Detect material changes
+        id: detect-changes
         run: |
-          git add --dry-run --ignore-removal
-          if [ -n "$(git status --porcelain)" ]; then
+          # Check for actual file changes (new/modified versions)
+          file_changes=$(git status --porcelain | grep -v "^?? index.yaml.old$" || true)
+
+          # Check if index.yaml versions changed (not just metadata)
+          versions_changed=false
+          if [ -f index.yaml.old ]; then
+            # Extract versions from old and new index.yaml
+            old_versions=$(grep -A 1000 "^versions:" index.yaml.old | grep "^  version:" | sort)
+            new_versions=$(grep -A 1000 "^versions:" index.yaml | grep "^  version:" | sort)
+
+            if [ "$old_versions" != "$new_versions" ]; then
+              versions_changed=true
+            fi
+
+            # Also check if published_at or parsed_at changed for existing versions
+            old_data=$(grep -E "^  version:|^  published_at:|^  parsed_at:" index.yaml.old | sort)
+            new_data=$(grep -E "^  version:|^  published_at:|^  parsed_at:" index.yaml | sort)
+
+            if [ "$old_data" != "$new_data" ]; then
+              versions_changed=true
+            fi
+
+            rm index.yaml.old
+          fi
+
+          # Determine if there are material changes
+          has_material_changes=false
+
+          if [ -n "$file_changes" ]; then
+            has_material_changes=true
+            echo "File changes detected:"
+            echo "$file_changes"
+          fi
+
+          if [ "$versions_changed" = "true" ]; then
+            has_material_changes=true
+            echo "Version data changed in index.yaml"
+          fi
+
+          if [ "$has_material_changes" = "true" ]; then
             echo "has_changes=true" >> $GITHUB_OUTPUT
-            echo "Changes detected:"
-            git status --short
           else
             echo "has_changes=false" >> $GITHUB_OUTPUT
-            echo "No changes detected"
+            echo "No material changes detected (only metadata updates)"
           fi
 
       - name: Create Pull Request
-        if: steps.git-check.outputs.has_changes == 'true'
+        if: steps.detect-changes.outputs.has_changes == 'true'
         uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}

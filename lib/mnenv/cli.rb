@@ -2,6 +2,7 @@
 
 require 'thor'
 require 'json'
+require_relative 'version'
 require_relative 'models'
 require_relative 'commands'
 require_relative 'json_formatter'

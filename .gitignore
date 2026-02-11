@@ -6,3 +6,4 @@
 /vendor/
 /.bundle/
 /v*/Gemfile.lock.bak
+/pkg/

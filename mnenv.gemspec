@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative 'lib/mnenv/models/version'
+require_relative 'lib/mnenv/version'
 
 Gem::Specification.new do |spec|
   spec.name          = 'mnenv'

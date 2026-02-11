@@ -20,6 +20,4 @@ module Mnenv
 
     def version_parts = version.split('.').map(&:to_i)
   end
-
-  VERSION = '0.1.0'
 end

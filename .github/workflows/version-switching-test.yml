@@ -38,7 +38,6 @@ jobs:
         with:
           ruby-version: '3.4'
           bundler-cache: true
-          working-directory: mnenv
 
       - name: Install mnenv
         working-directory: mnenv

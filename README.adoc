@@ -1,450 +1,30 @@
-= Metanorma Versions
+= Metanorma Version Registry
 
 image:https://img.shields.io/github/license/metanorma/versions[License]
-image:https://github.com/metanorma/versions/actions/workflows/rake.yml/badge.svg[Rake]
 
-Version discovery and management for Metanorma across multiple package sources.
+Static version registry for Metanorma across multiple package sources.
 
 == Purpose
 
-This repository provides a unified interface for discovering and managing Metanorma versions from various sources:
+This repository serves as a **read-only version registry** for Metanorma, storing
+version metadata and Gemfile archives from various distribution channels:
 
-* **Gemfile (Docker)** - Docker Hub images with Gemfile/Gemfile.lock.archived extraction
+* **Gemfile (Docker)** - Gemfile/Gemfile.lock.archived files extracted from
+  Docker Hub images
 * **Snap** - Snapcraft snap packages with revision tracking
 * **Homebrew** - macOS Homebrew formula versions from GitHub tags
 * **Chocolatey** - Windows Chocolatey packages
 
-This enables link:{https://github.com/metanorma/actions-mn/setup}[actions-mn/setup] to provide version selection across all platforms.
-
-=== Historical Gemfile Lock Archive
-
-This repository also stores Gemfile and Gemfile.lock.archived files extracted from
-https://hub.docker.com/r/metanorma/metanorma[Docker Hub: metanorma/metanorma]
-Docker containers for each version of Metanorma.
-
-When deploying or using Metanorma, you may need to install the exact same gem
-versions that are used in a specific Docker container release. This repository
-provides the Gemfile and Gemfile.lock.archived files for each version of the
-metanorma/metanorma Docker image, allowing you to replicate the exact gem
-dependency set.
-
-== Features
-
-* *Unified CLI* - Single `mnenv` command to query and manage versions from all sources
-* *YAML Storage* - Version data stored in `data/` directory for easy inspection
-* *JSON Output* - CLI commands output JSON for GitHub Actions consumption
-* *Extraction Modes* - Incremental, replace, and revamp modes for Gemfile extraction
-* *Model-Driven OOP* - Built with lutaml-model for proper data serialization
-
-== Setting Up
-
-Clone this repository and install dependencies:
-
-[source,shell]
-----
-git clone https://github.com/metanorma/versions.git
-cd versions
-bundle install
-----
-
-== Usage
-
-=== CLI commands
-
-The `mnenv` command provides subcommands for each platform:
-
-[source,shell]
-----
-# List Gemfile (Ruby) versions
-bundle exec exe/mnenv gemfile list
-
-# List Snap versions
-bundle exec exe/mnenv snap list
-
-# List Homebrew versions
-bundle exec exe/mnenv homebrew list
-
-# List Chocolatey versions
-bundle exec exe/mnenv chocolatey list
-
-# List all versions in text format
-bundle exec exe/mnenv list-all
-
-# List all versions in JSON format
-bundle exec exe/mnenv list-all -f json
-
-# Get info for a specific version
-bundle exec exe/mnenv info gemfile 1.14.4
-
-# Show mnenv version
-bundle exec exe/mnenv version
-----
-
-=== Updating version data
-
-Each platform supports three modes of updating version data:
-
-* *refresh* - Incremental mode: fetch only new versions not present locally
-* *revamp* - Re-fetch all versions, replacing existing data
-* *update VERSION* - Update a specific version
-
-.Gemfile (Docker) updates
-[source,shell]
-----
-# Extract only missing versions (incremental mode)
-bundle exec exe/mnenv gemfile refresh
-
-# Replace a single version
-bundle exec exe/mnenv gemfile update 1.14.4
-
-# Re-extract all versions
-bundle exec exe/mnenv gemfile revamp
-----
-
-.Snap updates
-[source,shell]
-----
-# Fetch and add new Snap versions (preserves historical data)
-bundle exec exe/mnenv snap refresh
-
-# Update a specific Snap version (updates all arch/channel combinations)
-bundle exec exe/mnenv snap update 1.14.4
-
-NOTE: Snap does not support 'revamp' mode because historical revision data
-would be lost. The YAML file (data/snap/versions.yaml) is the single source
-of truth containing both historical Snapcraft revisions and current API data.
-----
-
-.Homebrew updates
-[source,shell]
-----
-# Fetch and add new Homebrew versions
-bundle exec exe/mnenv homebrew refresh
-
-# Update a specific Homebrew version
-bundle exec exe/mnenv homebrew update 1.13.0
-
-# Re-fetch all Homebrew versions
-bundle exec exe/mnenv homebrew revamp
-----
-
-.Chocolatey updates
-[source,shell]
-----
-# Fetch and add new Chocolatey versions
-bundle exec exe/mnenv chocolatey refresh
-
-# Update a specific Chocolatey version
-bundle exec exe/mnenv chocolatey update 1.14.4
-
-# Re-fetch all Chocolatey versions
-bundle exec exe/mnenv chocolatey revamp
-----
-
-.Extraction modes
-
-incremental:: Extract only versions that are not present locally. This is the default mode and is used for daily scheduled runs.
-
-replace:: Re-extract a single version, replacing any existing files. Use this to fix corrupted or outdated extractions.
-
-revamp:: Re-extract all versions, replacing all existing files. Use this when the data model changes or you need to refresh all versions.
-
-=== Ruby API
-
-Query versions programmatically:
-
-[source,ruby]
-----
-require 'mnenv'
-
-# Gemfile versions
-gemfile_repo = Mnenv::GemfileRepository.new
-gemfile_versions = gemfile_repo.all
-gemfile_latest = gemfile_repo.latest
-
-# Snap versions
-snap_repo = Mnenv::SnapRepository.new
-snap_versions = snap_repo.all
-
-# Homebrew versions
-homebrew_repo = Mnenv::HomebrewRepository.new
-homebrew_versions = homebrew_repo.all
-
-# Chocolatey versions
-chocolatey_repo = Mnenv::ChocolateyRepository.new
-chocolatey_versions = chocolatey_repo.all
-----
-
-=== JSON output
-
-For GitHub Actions integration, output JSON format:
-
-[source,shell]
-----
-bundle exec exe/mnenv list-all -f json
-----
-
-Returns:
-
-[source,json]
-----
-{
-  "gemfile": {
-    "count": 124,
-    "latest": "1.14.4",
-    "versions": [...]
-  },
-  "snap": {
-    "count": 14,
-    "latest": "1.14.4",
-    "versions": [...]
-  },
-  "homebrew": {
-    "count": 56,
-    "latest": "1.13.0",
-    "versions": [...]
-  },
-  "chocolatey": {
-    "count": 144,
-    "latest": "1.14.4",
-    "versions": [...]
-  }
-}
-----
-
-== Direct Usage
-
-=== Reading version data from YAML files
-
-The version data is stored in YAML files under `data/` directory. You can read these files directly:
-
-[source,shell]
-----
-# View all Gemfile versions
-cat data/gemfile/versions.yaml
-
-# View all Snap versions with revisions
-cat data/snap/versions.yaml
-
-# View all Homebrew versions
-cat data/homebrew/versions.yaml
-
-# View all Chocolatey versions
-cat data/chocolatey/versions.yaml
-----
-
-.Parsing YAML with `yq`
-
-[source,shell]
-----
-# Get the latest version from each source
-yq '.metadata.latest_version' data/gemfile/versions.yaml
-yq '.metadata.latest_version' data/snap/versions.yaml
-yq '.metadata.latest_version' data/homebrew/versions.yaml
-yq '.metadata.latest_version' data/chocolatey/versions.yaml
-
-# Get version count
-yq '.metadata.count' data/gemfile/versions.yaml
-
-# Get all version numbers
-yq '.versions[].version' data/gemfile/versions.yaml
-
-# Get specific version info (Snap example with revision)
-yq '.versions[] | select(.version == "1.14.4")' data/snap/versions.yaml
-----
-
-.Parsing YAML with Ruby
-
-[source,ruby]
-----
-require 'yaml'
-
-# Load Gemfile versions
-data = YAML.load_file('data/gemfile/versions.yaml')
-puts "Latest: #{data['metadata']['latest_version']}"
-puts "Count: #{data['metadata']['count']}"
-
-# Find specific version
-version_1_14_4 = data['versions'].find { |v| v['version'] == '1.14.4' }
-----
-
-=== CLI queries for specific use cases
-
-[source,shell]
-----
-# Get the latest version across all sources
-bundle exec exe/mnenv list-all -f json | jq -r '.[].latest'
-
-# Check if a specific version exists in Snap
-bundle exec exe/mnenv snap list | grep "1.14.4"
-
-# Get Snap revision for a specific version/arch
-bundle exec exe/mnenv snap list | grep "1.14.4" | grep "amd64"
-
-# List all versions newer than 1.10.0
-bundle exec exe/mnenv gemfile list | awk '/v1\.(1[4-9]|[2-9][0-9])/ {print}'
-
-# Count versions per source
-bundle exec exe/mnenv gemfile list | wc -l
-bundle exec exe/mnenv snap list | wc -l
-----
-
-=== Using version data in scripts
-
-.Bash script to check for new versions
-
-[source,shell]
-----
-#!/bin/bash
-# check_versions.sh - Check if a version exists across all sources
-
-VERSION=$1
-
-if [ -z "$VERSION" ]; then
-  echo "Usage: $0 <version>"
-  exit 1
-fi
-
-echo "Checking version $VERSION across all sources..."
-
-# Check Gemfile
-if bundle exec exe/mnenv gemfile list | grep -q "$VERSION"; then
-  echo "✓ Gemfile: $VERSION found"
-else
-  echo "✗ Gemfile: $VERSION not found"
-fi
-
-# Check Snap
-if bundle exec exe/mnenv snap list | grep -q "$VERSION"; then
-  echo "✓ Snap: $VERSION found"
-else
-  echo "✗ Snap: $VERSION not found"
-fi
-
-# Check Homebrew
-if bundle exec exe/mnenv homebrew list | grep -q "$VERSION"; then
-  echo "✓ Homebrew: $VERSION found"
-else
-  echo "✗ Homebrew: $VERSION not found"
-fi
-
-# Check Chocolatey
-if bundle exec exe/mnenv chocolatey list | grep -q "$VERSION"; then
-  echo "✓ Chocolatey: $VERSION found"
-else
-  echo "✗ Chocolatey: $VERSION not found"
-fi
-----
-
-.Get Snap revision for a specific version
-
-[source,shell]
-----
-#!/bin/bash
-# get_snap_revision.sh - Get Snap revision for version/arch
-
-VERSION=$1
-ARCH=${2:-amd64}
-CHANNEL=${3:-stable}
-
-if [ -z "$VERSION" ]; then
-  echo "Usage: $0 <version> [arch] [channel]"
-  exit 1
-fi
-
-# Get revision from YAML
-yq ".versions[] | select(.version == \"$VERSION\" and .arch == \"$ARCH\" and .channel == \"$CHANNEL\") | .revision" data/snap/versions.yaml
-----
-
-.Compare versions across sources
-
-[source,ruby]
-----
-#!/usr/bin/env ruby
-# compare_versions.rb - Compare version availability
-
-require 'json'
-require 'yaml'
-
-SOURCES = %w[gemfile snap homebrew chocolatey].freeze
-
-def load_versions(source)
-  yaml_path = "data/#{source}/versions.yaml"
-  return [] unless File.exist?(yaml_path)
-
-  data = YAML.load_file(yaml_path)
-  data['versions'].map { |v| v['version'] }.uniq
-end
-
-def compare(version)
-  puts "Version #{version} availability:"
-  SOURCES.each do |source|
-    versions = load_versions(source)
-    status = versions.include?(version) ? '✓' : '✗'
-    puts "  #{status} #{source}"
-  end
-end
-
-# Usage: ruby compare_versions.rb 1.14.4
-compare(ARGV[0])
-----
-
-=== Getting Gemfile files for a version
-
-[source,shell]
-----
-# List versions that have Gemfiles extracted
-bundle exec exe/mnenv gemfile list | grep -E "v[0-9]"
-
-# Check if a specific version has Gemfiles
-if [ -f "data/gemfile/v1.14.4/Gemfile" ]; then
-  echo "Gemfile exists for 1.14.4"
-  cat data/gemfile/v1.14.4/Gemfile
-fi
-
-# Copy Gemfiles to your project
-cp data/gemfile/v1.14.4/Gemfile /path/to/project/
-cp data/gemfile/v1.14.4/Gemfile.lock.archived /path/to/project/Gemfile.lock
-----
-
-=== Snap-specific queries
-
-Snap versions use composite keys (version-revision-arch-channel). Query them:
-
-[source,shell]
-----
-# List all Snap versions with their revisions
-bundle exec exe/mnenv snap list
-
-# Get all revisions for a specific version
-bundle exec exe/mnenv snap list | grep "1.14.4"
-
-# Get AMD64 stable revision for a version
-yq '.versions[] | select(.version == "1.14.4" and .arch == "amd64" and .channel == "stable") | .revision' data/snap/versions.yaml
-
-# Get all architectures for a version
-yq '.versions[] | select(.version == "1.14.4") | .arch' data/snap/versions.yaml | sort -u
-
-# Get all channels for a version
-yq '.versions[] | select(.version == "1.14.4") | .channel' data/snap/versions.yaml | sort -u
-----
-
-=== JSON output for automation
-
-[source,shell]
-----
-# Get all versions as JSON
-bundle exec exe/mnenv list-all -f json > versions.json
-
-# Query JSON with jq
-jq '.gemfile.latest' versions.json
-jq '.snap.versions[] | select(.version == "1.14.4")' versions.json
-jq '.homebrew.count' versions.json
-
-# Use in scripts
-LATEST=$(bundle exec exe/mnenv list-all -f json | jq -r '.gemfile.latest')
-echo "Latest Gemfile version: $LATEST"
-----
+This enables link:https://github.com/metanorma/actions-mn[actions-mn] and
+link:https://github.com/metanorma/mnenv[mnenv] to provide version selection
+across all platforms.
+
+== Related repositories
+
+* **link:https://github.com/metanorma/mnenv[mnenv]** - Metanorma version
+  manager CLI (installation, version switching, shim management)
+* **link:https://github.com/metanorma/actions-mn[actions-mn]** - GitHub Actions
+  for setting up Metanorma
 
 == Data structure
 
@@ -467,15 +47,13 @@ data/
 
 === Version object structure
 
-Each version object contains:
+Each version object in YAML contains:
 
-[source,ruby]
+[source,yaml]
 ----
-{
-  "version": "1.14.4",
-  "published_at": "2025-01-15T10:30:00Z",
-  "parsed_at": "2025-01-15T10:30:00Z"
-}
+version: "1.14.4"
+published_at: "2025-01-15T10:30:00Z"
+parsed_at: "2025-01-15T10:30:00Z"
 ----
 
 Additional fields per source:
@@ -485,19 +63,75 @@ Additional fields per source:
 * **Homebrew** - `tag_name`, `commit_sha`
 * **Chocolatey** - `package_name`, `is_pre_release`
 
-=== Using lock files with Bundler
+== Usage
+
+=== Reading version data directly
+
+The version data is stored in YAML files under `data/` directory. You can read
+these files directly:
+
+[source,shell]
+----
+# View all Gemfile versions
+cat data/gemfile/versions.yaml
+
+# View all Snap versions with revisions
+cat data/snap/versions.yaml
+
+# View all Homebrew versions
+cat data/homebrew/versions.yaml
+
+# View all Chocolatey versions
+cat data/chocolatey/versions.yaml
+----
+
+=== Parsing YAML with `yq`
+
+[source,shell]
+----
+# Get the latest version from each source
+yq '.metadata.latest_version' data/gemfile/versions.yaml
+yq '.metadata.latest_version' data/snap/versions.yaml
+yq '.metadata.latest_version' data/homebrew/versions.yaml
+yq '.metadata.latest_version' data/chocolatey/versions.yaml
+
+# Get version count
+yq '.metadata.count' data/gemfile/versions.yaml
+
+# Get all version numbers
+yq '.versions[].version' data/gemfile/versions.yaml
+
+# Get specific version info (Snap example with revision)
+yq '.versions[] | select(.version == "1.14.4")' data/snap/versions.yaml
+----
+
+=== Parsing YAML with Ruby
+
+[source,ruby]
+----
+require 'yaml'
+
+# Load Gemfile versions
+data = YAML.load_file('data/gemfile/versions.yaml')
+puts "Latest: #{data['metadata']['latest_version']}"
+puts "Count: #{data['metadata']['count']}"
+
+# Find specific version
+version_1_14_4 = data['versions'].find { |v| v['version'] == '1.14.4' }
+----
+
+=== Using Gemfile files for a version
 
 To install the exact gems from a specific Metanorma Docker version:
 
-[source,sh]
+[source,shell]
 ----
 # Clone this repository
 git clone https://github.com/metanorma/versions.git
-cd versions
 
 # Copy the files for your desired version
-cp data/gemfile/v1.14.4/Gemfile /path/to/your/project/
-cp data/gemfile/v1.14.4/Gemfile.lock.archived /path/to/your/project/Gemfile.lock
+cp versions/data/gemfile/v1.14.4/Gemfile /path/to/your/project/
+cp versions/data/gemfile/v1.14.4/Gemfile.lock.archived /path/to/your/project/Gemfile.lock
 
 # Install the exact gems
 cd /path/to/your/project
@@ -506,99 +140,45 @@ bundle install
 
 === Finding the Docker image version
 
-To find which version of metanorma/metanorma Docker image corresponds to a
-metanorma-cli version:
+The Docker image tag corresponds to the metanorma-cli version:
 
-[source,sh]
+[source,shell]
 ----
-# Inspect the Gemfile to see the metanorma-cli version
-cat data/gemfile/v1.14.4/Gemfile
-
+# Check the Gemfile to see the metanorma-cli version
+grep "metanorma-cli" data/gemfile/v1.14.4/Gemfile
 # Output: gem "metanorma-cli", "= 1.14.4"
-----
 
-The Docker image tag is the same as the metanorma-cli version:
-
-[source,sh]
-----
+# Pull the corresponding Docker image
 docker pull metanorma/metanorma:1.14.4
 ----
 
-== Development
+== Data updates
 
-=== Running tests
+Version data is automatically updated via GitHub Actions workflows:
 
-[source,shell]
-----
-bundle exec rake test
-----
+* `fetch-gemfile.yml` - Extracts Gemfiles from Docker Hub
+* `fetch-snap.yml` - Fetches Snap versions from Snapcraft API
+* `fetch-homebrew.yml` - Fetches Homebrew versions from GitHub tags
+* `fetch-chocolatey.yml` - Fetches Chocolatey versions from Chocolatey API
 
-=== Running Rake tasks
+These workflows run on schedule and can also be triggered manually.
 
-[source,shell]
-----
-# List available Rake tasks
-bundle exec rake -T
+== Historical Gemfile lock archive
 
-# Generate index
-bundle exec rake generate_index
-----
+This repository stores Gemfile and Gemfile.lock.archived files extracted from
+https://hub.docker.com/r/metanorma/metanorma[Docker Hub: metanorma/metanorma]
+Docker containers for each version of Metanorma.
 
-=== Code quality
-
-[source,shell]
-----
-# Run Rubocop
-bundle exec rubocop
-
-# Auto-correct issues
-bundle exec rubocop --autocorrect
-----
-
-== Architecture
-
-This repository follows a model-driven OOP architecture using lutaml-model:
-
-----
-Mnenv
-├── ArtifactVersion  (base version class with LutaML serialization)
-├── Repository       (YAML CRUD operations)
-├── Fetcher          (API communication)
-├── Logger           (logging utility)
-├── JsonFormatter    (JSON output)
-└── Cli              (Thor CLI with subcommands)
-
-Modules by platform:
-├── Gemfile/
-│   ├── Version      (Gemfile-specific with gemfile paths)
-│   ├── Repository   (Gemfile YAML storage)
-│   ├── Fetcher      (Docker Hub API)
-│   └── Extractor    (Gemfile extraction from containers)
-├── Snap/
-│   ├── Version      (Snap-specific with revision/arch)
-│   ├── Repository   (Snap YAML storage)
-│   └── Fetcher      (Snapcraft API)
-├── Homebrew/
-│   ├── Version      (Homebrew-specific with tag/commit)
-│   ├── Repository   (Homebrew YAML storage)
-│   └── Fetcher      (GitHub tags API)
-└── Chocolatey/
-    ├── Version      (Chocolatey-specific with pre-release flag)
-    ├── Repository   (Chocolatey YAML storage)
-    └── Fetcher      (Chocolatey API)
-----
-
-== Contributing
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b my-amazing-feature`)
-3. Commit your changes (`git commit -am 'Add some amazing feature'`)
-4. Push to the branch (`git push origin my-amazing-feature`)
-5. Open a Pull Request
+When deploying or using Metanorma, you may need to install the exact same gem
+versions that are used in a specific Docker container release. This repository
+provides the Gemfile and Gemfile.lock.archived files for each version of the
+metanorma/metanorma Docker image, allowing you to replicate the exact gem
+dependency set.
 
 == License
 
-This repository is available as open source under the terms of the {file-license}[MIT License].
+This repository is available as open source under the terms of the
+{file-license}[MIT License].
 
 == Copyright
 

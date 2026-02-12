@@ -2,8 +2,4 @@
 *.tmp
 *.log
 .DS_Store
-/Gemfile.lock
-/vendor/
-/.bundle/
-/v*/Gemfile.lock.bak
-/pkg/
+.ruby-lsp/

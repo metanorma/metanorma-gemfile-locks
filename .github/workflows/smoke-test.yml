@@ -2,7 +2,7 @@ name: Smoke Tests
 
 on:
   push:
-    branches: [main, '*']
+    branches: [main, test-gha-workflows]
   pull_request:
   workflow_dispatch:
 
@@ -14,26 +14,8 @@ env:
 
 jobs:
   quick-test:
-    name: Quick ${{ matrix.method }} test
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest]
-        method: [gemfile]
-        include:
-          # Expand when binary binaries are available
-          # - os: ubuntu-latest
-          #   method: binary
-          # - os: macos-latest
-          #   method: gemfile
-          # - os: macos-latest
-          #   method: binary
-          # - os: windows-latest
-          #   method: gemfile
-          # - os: windows-latest
-          #   method: binary
+    name: Quick gemfile test
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
@@ -42,7 +24,6 @@ jobs:
           path: mnenv
 
       - name: Set up Ruby
-        if: matrix.method == 'gemfile'
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: '3.4'
@@ -57,8 +38,8 @@ jobs:
 
       - name: Install Metanorma
         run: |
-          mnenv install ${{ env.MNENV_VERSION }} --source ${{ matrix.method }}
-          mnenv global ${{ env.MNENV_VERSION }} --source ${{ matrix.method }}
+          mnenv install ${{ env.MNENV_VERSION }} --source gemfile
+          mnenv global ${{ env.MNENV_VERSION }} --source gemfile
 
       - name: Verify installation
         run: |
@@ -84,7 +65,7 @@ jobs:
       - name: Upload test output
         uses: actions/upload-artifact@v4
         with:
-          name: smoke-test-${{ matrix.method }}
+          name: smoke-test-gemfile
           path: /tmp/test-mn/test.*
           retention-days: 3
           if-no-files-found: ignore

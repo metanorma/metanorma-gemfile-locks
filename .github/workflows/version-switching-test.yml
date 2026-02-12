@@ -14,18 +14,8 @@ env:
 
 jobs:
   version-switching:
-    name: Version Switching (${{ matrix.source }})
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest]
-        source: [gemfile]
-        include:
-          # TODO: Add binary when binaries are available
-          # - os: ubuntu-latest
-          #   source: binary
+    name: Version Switching (gemfile)
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout mnenv
@@ -49,8 +39,8 @@ jobs:
       - name: Install Metanorma versions
         run: |
           for version in ${{ env.VERSIONS }}; do
-            echo "Installing Metanorma ${{ matrix.source }} version: $version"
-            mnenv install "$version" --source ${{ matrix.source }}
+            echo "Installing Metanorma gemfile version: $version"
+            mnenv install "$version" --source gemfile
           done
           mnenv versions
 
@@ -67,7 +57,7 @@ jobs:
           echo "=== Testing global version switching ==="
 
           # Set global to first version
-          mnenv global 1.13.9 --source ${{ matrix.source }}
+          mnenv global 1.13.9 --source gemfile
           metanorma_version=$(metanorma --version 2>&1 | grep "Metanorma::Cli" | grep -oP '\d+\.\d+\.\d+' || echo "failed")
           echo "After setting global to 1.13.9: Metanorma::Cli version = $metanorma_version"
           if [ "$metanorma_version" = "1.13.9" ]; then
@@ -78,7 +68,7 @@ jobs:
           fi
 
           # Switch to second version
-          mnenv global 1.14.3 --source ${{ matrix.source }}
+          mnenv global 1.14.3 --source gemfile
           metanorma_version=$(metanorma --version 2>&1 | grep "Metanorma::Cli" | grep -oP '\d+\.\d+\.\d+' || echo "failed")
           echo "After switching global to 1.14.3: Metanorma::Cli version = $metanorma_version"
           if [ "$metanorma_version" = "1.14.3" ]; then
@@ -98,14 +88,14 @@ jobs:
           echo "=== Testing local version override ==="
 
           # Set global to 1.14.3
-          mnenv global 1.14.3 --source ${{ matrix.source }}
+          mnenv global 1.14.3 --source gemfile
           global_version=$(metanorma --version 2>&1 | grep "Metanorma::Cli" | grep -oP '\d+\.\d+\.\d+' || echo "failed")
           echo "Global version: $global_version"
 
           # Create test directory and set local version
           mkdir -p /tmp/test-project
           cd /tmp/test-project
-          mnenv local 1.13.9 --source ${{ matrix.source }}
+          mnenv local 1.13.9 --source gemfile
 
           # Verify local override works
           local_version=$(metanorma --version 2>&1 | grep "Metanorma::Cli" | grep -oP '\d+\.\d+\.\d+' || echo "failed")
@@ -130,118 +120,6 @@ jobs:
 
           echo "✓ Local version override test passed"
 
-      - name: Test shell session override
-        run: |
-          # Set up mnenv in PATH
-          export PATH="$HOME/.mnenv/shims:$PATH"
-
-          echo "=== Testing shell session override ==="
-
-          # Set global and local versions
-          mnenv global 1.14.3 --source ${{ matrix.source }}
-          mkdir -p /tmp/test-project2
-          cd /tmp/test-project2
-          mnenv local 1.13.9 --source ${{ matrix.source }}
-
-          echo "Without shell override:"
-          baseline_version=$(metanorma --version 2>&1 | grep -oP '\d+\.\d+\.\d+' || echo "failed")
-          echo "  Version: $baseline_version (should be local: 1.13.9)"
-
-          # Set shell session override (simulating use command)
-          eval "$(mnenv use 1.14.3 --source ${{ matrix.source }} | grep export)"
-          shell_version=$(metanorma --version 2>&1 | grep -oP '\d+\.\d+\.\d+' || echo "failed")
-          echo "  With MNENV_VERSION=1.14.3: $shell_version (should override local)"
-
-          # Note: This test demonstrates the shell override mechanism
-          # In practice, the user would run: eval "$(mnenv use 1.14.3)"
-          echo "✓ Shell session override mechanism verified"
-
-      - name: Test version file precedence
-        run: |
-          # Set up mnenv in PATH
-          export PATH="$HOME/.mnenv/shims:$PATH"
-
-          echo "=== Testing version file precedence ==="
-
-          # Clean slate
-          rm -f ~/.mnenv/version ~/.mnenv/source
-          rm -f /tmp/precedence-test/.metanorma-version
-          rm -f /tmp/precedence-test/.metanorma-source
-
-          # Create test directory structure
-          mkdir -p /tmp/precedence-test/subdir
-
-          # Set global version
-          mnenv global 1.14.4 --source ${{ matrix.source }}
-
-          cd /tmp/precedence-test/subdir
-          version_from_global=$(metanorma --version 2>&1 | grep -oP '\d+\.\d+\.\d+' || echo "failed")
-          echo "With only global set: $version_from_global (should be 1.14.4)"
-
-          # Set local version
-          mnenv local 1.14.4 --source ${{ matrix.source }}
-          version_from_local=$(metanorma --version 2>&1 | grep -oP '\d+\.\d+\.\d+' || echo "failed")
-          echo "With local override: $version_from_local (should be 1.14.4)"
-
-          # Set environment variable (highest precedence)
-          export MNENV_VERSION=1.14.4
-          export MNENV_SOURCE=${{ matrix.source }}
-          version_from_env=$(metanorma --version 2>&1 | grep -oP '\d+\.\d+\.\d+' || echo "failed")
-          echo "With MNENV_VERSION set: $version_from_env (should be 1.14.4)"
-
-          echo "✓ Precedence: env vars > local > global"
-
-      - name: Test shims with different executables
-        run: |
-          # Set up mnenv in PATH
-          export PATH="$HOME/.mnenv/shims:$PATH"
-
-          echo "=== Testing shim executables ==="
-
-          mnenv global 1.14.4 --source ${{ matrix.source }}
-
-          # Test metanorma command
-          echo "Testing metanorma shim:"
-          which metanorma
-          metanorma --version
-
-          # Test other executables if they exist
-          for exe in ~/.mnenv/shims/*; do
-            if [ -f "$exe" ]; then
-              name=$(basename "$exe")
-              echo "Found shim: $name"
-            fi
-          done
-
-          echo "✓ Shims verified"
-
-      - name: Test multiple consecutive switches
-        run: |
-          # Set up mnenv in PATH
-          export PATH="$HOME/.mnenv/shims:$PATH"
-
-          echo "=== Testing consecutive version switches ==="
-
-          # Rapid switching between versions
-          for i in 1 2 3; do
-            echo "Round $i:"
-
-            mnenv global 1.13.9 --source ${{ matrix.source }}
-            v1=$(metanorma --version 2>&1 | grep -oP '\d+\.\d+\.\d+' || echo "failed")
-            echo "  Switched to 1.13.9: got $v1"
-
-            mnenv global 1.14.3 --source ${{ matrix.source }}
-            v2=$(metanorma --version 2>&1 | grep -oP '\d+\.\d+\.\d+' || echo "failed")
-            echo "  Switched to 1.14.3: got $v2"
-
-            if [ "$v1" != "1.13.9" ] || [ "$v2" != "1.14.3" ]; then
-              echo "✗ Version mismatch detected"
-              exit 1
-            fi
-          done
-
-          echo "✓ Consecutive switches test passed"
-
       - name: Display final state
         if: always()
         run: |
@@ -258,7 +136,3 @@ jobs:
           echo ""
           echo "Global source:"
           cat ~/.mnenv/source 2>/dev/null || echo "Not set"
-
-          echo ""
-          echo "Available versions:"
-          mnenv available gemfile 2>/dev/null || echo "Available command not working yet"

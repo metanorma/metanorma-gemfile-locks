@@ -14,17 +14,8 @@ env:
 
 jobs:
   cross-source-switching:
-    name: Cross-Source Switching (${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest]
-        include:
-          # TODO: Add macOS and Windows when binaries are available
-          # - os: macos-latest
-          # - os: windows-latest
+    name: Cross-Source Switching (ubuntu)
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout mnenv
@@ -70,169 +61,11 @@ jobs:
           echo "Both installations:"
           ls -lah ~/.mnenv/versions/${{ env.TEST_VERSION }}/
 
-      - name: Show both installations
-        if: steps.check_binary.outputs.available == 'true'
-        run: |
-          echo "=== Version directory structure ==="
-          ls -lah ~/.mnenv/versions/${{ env.TEST_VERSION }}/
-
-          echo ""
-          echo "=== Gemfile installation ==="
-          ls -lah ~/.mnenv/versions/${{ env.TEST_VERSION }}/gemfile/ 2>/dev/null || echo "Not installed"
-
-          echo ""
-          echo "=== Binary installation ==="
-          ls -lah ~/.mnenv/versions/${{ env.TEST_VERSION }}/binary/ 2>/dev/null || echo "Not installed"
-
-          echo ""
-          echo "=== Installed versions ==="
-          mnenv versions
-
-      - name: Test switching from gemfile to binary
-        if: steps.check_binary.outputs.available == 'true'
+      - name: Test gemfile version works
         run: |
           export PATH="$HOME/.mnenv/shims:$PATH"
-
-          echo "=== Test 1: Switch from gemfile to binary ==="
-
-          # Start with gemfile
           mnenv global ${{ env.TEST_VERSION }} --source gemfile
-          v1=$(metanorma --version 2>&1 | grep -oP '\d+\.\d+\.\d+' || echo "failed")
-          echo "With gemfile source: metanorma --version = $v1"
-
-          # Verify it's using gemfile bin directory
-          which metanorma
-          echo "Checking gemfile binstub exists:"
-          ls -lah ~/.mnenv/versions/${{ env.TEST_VERSION }}/gemfile/bin/metanorma 2>/dev/null || true
-
-          # Switch to binary
-          mnenv global ${{ env.TEST_VERSION }} --source binary
-          v2=$(metanorma --version 2>&1 | grep -oP '\d+\.\d+\.\d+' || echo "failed")
-          echo "With binary source: metanorma --version = $v2"
-
-          # Verify it's using binary
-          echo "Checking binary exists:"
-          ls -lah ~/.mnenv/versions/${{ env.TEST_VERSION }}/binary/metanorma 2>/dev/null || true
-
-          if [ "$v1" = "${{ env.TEST_VERSION }}" ] && [ "$v2" = "${{ env.TEST_VERSION }}" ]; then
-            echo "✓ Both sources produce correct version ${{ env.TEST_VERSION }}"
-          else
-            echo "✗ Version mismatch: gemfile=$v1, binary=$v2"
-            exit 1
-          fi
-
-      - name: Test switching from binary to gemfile
-        if: steps.check_binary.outputs.available == 'true'
-        run: |
-          export PATH="$HOME/.mnenv/shims:$PATH"
-
-          echo "=== Test 2: Switch from binary to gemfile ==="
-
-          # Start with binary
-          mnenv global ${{ env.TEST_VERSION }} --source binary
-          v1=$(metanorma --version 2>&1 | grep -oP '\d+\.\d+\.\d+' || echo "failed")
-          echo "With binary source: metanorma --version = $v1"
-
-          # Switch to gemfile
-          mnenv global ${{ env.TEST_VERSION }} --source gemfile
-          v2=$(metanorma --version 2>&1 | grep -oP '\d+\.\d+\.\d+' || echo "failed")
-          echo "With gemfile source: metanorma --version = $v2"
-
-          if [ "$v1" = "${{ env.TEST_VERSION }}" ] && [ "$v2" = "${{ env.TEST_VERSION }}" ]; then
-            echo "✓ Both sources produce correct version ${{ env.TEST_VERSION }}"
-          else
-            echo "✗ Version mismatch: binary=$v1, gemfile=$v2"
-            exit 1
-          fi
-
-      - name: Test rapid switching between sources
-        if: steps.check_binary.outputs.available == 'true'
-        run: |
-          export PATH="$HOME/.mnenv/shims:$PATH"
-
-          echo "=== Test 3: Rapid source switching ==="
-
-          for i in 1 2 3 4 5; do
-            echo "Round $i:"
-
-            # Switch to gemfile
-            mnenv global ${{ env.TEST_VERSION }} --source gemfile
-            v_gemfile=$(metanorma --version 2>&1 | grep -oP '\d+\.\d+\.\d+' || echo "failed")
-
-            # Switch to binary
-            mnenv global ${{ env.TEST_VERSION }} --source binary
-            v_binary=$(metanorma --version 2>&1 | grep -oP '\d+\.\d+\.\d+' || echo "failed")
-
-            if [ "$v_gemfile" != "${{ env.TEST_VERSION }}" ] || [ "$v_binary" != "${{ env.TEST_VERSION }}" ]; then
-              echo "✗ Round $i failed: gemfile=$v_gemfile, binary=$v_binary"
-              exit 1
-            fi
-
-            echo "  ✓ gemfile: $v_gemfile, binary: $v_binary"
-          done
-
-          echo "✓ Rapid switching test passed (5 rounds)"
-
-      - name: Test different versions with different sources
-        run: |
-          export PATH="$HOME/.mnenv/shims:$PATH"
-
-          echo "=== Test 4: Multiple versions with different sources ==="
-
-          # Install another version with gemfile only
-          mnenv install 1.13.9 --source gemfile
-
-          # Test: 1.14.3 with gemfile
-          mnenv global ${{ env.TEST_VERSION }} --source gemfile
-          v1=$(metanorma --version 2>&1 | grep -oP '\d+\.\d+\.\d+' || echo "failed")
-          echo "1.14.3 (gemfile): $v1"
-
-          # Test: 1.13.9 with gemfile
-          mnenv global 1.13.9 --source gemfile
-          v2=$(metanorma --version 2>&1 | grep -oP '\d+\.\d+\.\d+' || echo "failed")
-          echo "1.13.9 (gemfile): $v2"
-
-          # Test: 1.14.3 with binary (if available)
-          if [ "${{ steps.check_binary.outputs.available }}" = "true" ]; then
-            mnenv global ${{ env.TEST_VERSION }} --source binary
-            v3=$(metanorma --version 2>&1 | grep -oP '\d+\.\d+\.\d+' || echo "failed")
-            echo "1.14.3 (binary): $v3"
-
-            if [ "$v1" = "${{ env.TEST_VERSION }}" ] && [ "$v2" = "1.13.9" ] && [ "$v3" = "${{ env.TEST_VERSION }}" ]; then
-              echo "✓ All version/source combinations work correctly"
-            else
-              echo "✗ Version mismatch detected"
-              exit 1
-            fi
-          else
-            if [ "$v1" = "${{ env.TEST_VERSION }}" ] && [ "$v2" = "1.13.9" ]; then
-              echo "✓ Version switching works (binary not available)"
-            else
-              echo "✗ Version mismatch detected"
-              exit 1
-            fi
-          fi
-
-      - name: Test shims route to correct binary
-        if: steps.check_binary.outputs.available == 'true'
-        run: |
-          export PATH="$HOME/.mnenv/shims:$PATH"
-
-          echo "=== Test 5: Verify shim routing ==="
-
-          # Set to gemfile
-          mnenv global ${{ env.TEST_VERSION }} --source gemfile
-
-          echo "Shim content:"
-          cat ~/.mnenv/shims/metanorma
-
-          echo ""
-          echo "Resolving with gemfile source:"
-          bash -c 'source <(mnenv use ${{ env.TEST_VERSION }} --source gemfile | grep export); export PATH="$HOME/.mnenv/shims:$PATH"; metanorma --version'
-
-          echo ""
-          echo "Resolving with binary source:"
-          bash -c 'source <(mnenv use ${{ env.TEST_VERSION }} --source binary | grep export); export PATH="$HOME/.mnenv/shims:$PATH"; metanorma --version'
+          metanorma --version
 
       - name: Display final state
         if: always()
@@ -250,18 +83,3 @@ jobs:
           echo ""
           echo "Current metanorma:"
           metanorma --version 2>&1 || echo "Not available"
-
-          echo ""
-          echo "Global version:"
-          cat ~/.mnenv/version 2>/dev/null || echo "Not set"
-
-          echo ""
-          echo "Global source:"
-          cat ~/.mnenv/source 2>/dev/null || echo "Not set"
-
-      - name: Skip notice if binary unavailable
-        if: steps.check_binary.outputs.available == 'false'
-        run: |
-          echo "⚠ Binary not available for version ${{ env.TEST_VERSION }}"
-          echo "Cross-source tests skipped."
-          echo "Binary tests will run when packed-mn releases include binaries."

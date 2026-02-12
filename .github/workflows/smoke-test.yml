@@ -38,6 +38,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          path: mnenv
 
       - name: Set up Ruby
         if: matrix.method == 'gemfile'
@@ -45,8 +47,10 @@ jobs:
         with:
           ruby-version: '3.4'
           bundler-cache: true
+          working-directory: mnenv
 
       - name: Install mnenv
+        working-directory: mnenv
         run: |
           bundle install
           rake install

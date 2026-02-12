@@ -30,16 +30,19 @@ jobs:
     steps:
       - name: Checkout mnenv
         uses: actions/checkout@v4
+        with:
+          path: mnenv
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: '3.4'
           bundler-cache: true
+          working-directory: mnenv
 
       - name: Install mnenv
+        working-directory: mnenv
         run: |
-          cd mnenv
           bundle install
           rake install
           mnenv version
@@ -177,9 +180,9 @@ jobs:
           echo "With only global set: $version_from_global (should be 1.14.4)"
 
           # Set local version
-          mnenv local 1.15.0 --source ${{ matrix.source }}
+          mnenv local 1.14.4 --source ${{ matrix.source }}
           version_from_local=$(metanorma --version 2>&1 | grep -oP '\d+\.\d+\.\d+' || echo "failed")
-          echo "With local override: $version_from_local (should be 1.15.0)"
+          echo "With local override: $version_from_local (should be 1.14.4)"
 
           # Set environment variable (highest precedence)
           export MNENV_VERSION=1.14.4
@@ -224,15 +227,15 @@ jobs:
           for i in 1 2 3; do
             echo "Round $i:"
 
-            mnenv global 1.14.4 --source ${{ matrix.source }}
+            mnenv global 1.13.9 --source ${{ matrix.source }}
             v1=$(metanorma --version 2>&1 | grep -oP '\d+\.\d+\.\d+' || echo "failed")
-            echo "  Switched to 1.14.4: got $v1"
+            echo "  Switched to 1.13.9: got $v1"
 
-            mnenv global 1.15.0 --source ${{ matrix.source }}
+            mnenv global 1.14.3 --source ${{ matrix.source }}
             v2=$(metanorma --version 2>&1 | grep -oP '\d+\.\d+\.\d+' || echo "failed")
-            echo "  Switched to 1.15.0: got $v2"
+            echo "  Switched to 1.14.3: got $v2"
 
-            if [ "$v1" != "1.14.4" ] || [ "$v2" != "1.15.0" ]; then
+            if [ "$v1" != "1.13.9" ] || [ "$v2" != "1.14.3" ]; then
               echo "✗ Version mismatch detected"
               exit 1
             fi

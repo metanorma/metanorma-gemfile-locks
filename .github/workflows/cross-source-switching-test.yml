@@ -29,16 +29,19 @@ jobs:
     steps:
       - name: Checkout mnenv
         uses: actions/checkout@v4
+        with:
+          path: mnenv
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: '3.4'
           bundler-cache: true
+          working-directory: mnenv
 
       - name: Install mnenv
+        working-directory: mnenv
         run: |
-          cd mnenv
           bundle install
           rake install
           mnenv version
@@ -178,32 +181,32 @@ jobs:
           echo "=== Test 4: Multiple versions with different sources ==="
 
           # Install another version with gemfile only
-          mnenv install 1.15.0 --source gemfile
+          mnenv install 1.13.9 --source gemfile
 
-          # Test: 1.14.4 with gemfile
+          # Test: 1.14.3 with gemfile
           mnenv global ${{ env.TEST_VERSION }} --source gemfile
           v1=$(metanorma --version 2>&1 | grep -oP '\d+\.\d+\.\d+' || echo "failed")
-          echo "1.14.4 (gemfile): $v1"
+          echo "1.14.3 (gemfile): $v1"
 
-          # Test: 1.15.0 with gemfile
-          mnenv global 1.15.0 --source gemfile
+          # Test: 1.13.9 with gemfile
+          mnenv global 1.13.9 --source gemfile
           v2=$(metanorma --version 2>&1 | grep -oP '\d+\.\d+\.\d+' || echo "failed")
-          echo "1.15.0 (gemfile): $v2"
+          echo "1.13.9 (gemfile): $v2"
 
-          # Test: 1.14.4 with binary (if available)
+          # Test: 1.14.3 with binary (if available)
           if [ "${{ steps.check_binary.outputs.available }}" = "true" ]; then
             mnenv global ${{ env.TEST_VERSION }} --source binary
             v3=$(metanorma --version 2>&1 | grep -oP '\d+\.\d+\.\d+' || echo "failed")
-            echo "1.14.4 (binary): $v3"
+            echo "1.14.3 (binary): $v3"
 
-            if [ "$v1" = "${{ env.TEST_VERSION }}" ] && [ "$v2" = "1.15.0" ] && [ "$v3" = "${{ env.TEST_VERSION }}" ]; then
+            if [ "$v1" = "${{ env.TEST_VERSION }}" ] && [ "$v2" = "1.13.9" ] && [ "$v3" = "${{ env.TEST_VERSION }}" ]; then
               echo "✓ All version/source combinations work correctly"
             else
               echo "✗ Version mismatch detected"
               exit 1
             fi
           else
-            if [ "$v1" = "${{ env.TEST_VERSION }}" ] && [ "$v2" = "1.15.0" ]; then
+            if [ "$v1" = "${{ env.TEST_VERSION }}" ] && [ "$v2" = "1.13.9" ]; then
               echo "✓ Version switching works (binary not available)"
             else
               echo "✗ Version mismatch detected"

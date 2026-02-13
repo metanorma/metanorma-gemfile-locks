@@ -14,6 +14,7 @@ version metadata and Gemfile archives from various distribution channels:
 * **Snap** - Snapcraft snap packages with revision tracking
 * **Homebrew** - macOS Homebrew formula versions from GitHub tags
 * **Chocolatey** - Windows Chocolatey packages
+* **Binary (packed-mn)** - Pre-compiled binaries from GitHub releases
 
 This enables link:https://github.com/metanorma/actions-mn[actions-mn] and
 link:https://github.com/metanorma/mnenv[mnenv] to provide version selection
@@ -41,8 +42,10 @@ data/
 │   └── versions.yaml          # Snap versions with revision data
 ├── homebrew/
 │   └── versions.yaml          # Homebrew versions from tags
-└── chocolatey/
-    └── versions.yaml          # Chocolatey versions
+├── chocolatey/
+│   └── versions.yaml          # Chocolatey versions
+└── binary/
+    └── versions.yaml          # Binary (packed-mn) versions with platform info
 ----
 
 === Version object structure
@@ -62,6 +65,7 @@ Additional fields per source:
 * **Snap** - `revision`, `arch`, `channel`
 * **Homebrew** - `tag_name`, `commit_sha`
 * **Chocolatey** - `package_name`, `is_pre_release`
+* **Binary** - `tag_name`, `html_url`, `platforms` (array with `name`, `arch`, `variant`, `format`, `filename`)
 
 == Usage
 
@@ -83,6 +87,9 @@ cat data/homebrew/versions.yaml
 
 # View all Chocolatey versions
 cat data/chocolatey/versions.yaml
+
+# View all Binary (packed-mn) versions
+cat data/binary/versions.yaml
 ----
 
 === Parsing YAML with `yq`
@@ -94,6 +101,7 @@ yq '.metadata.latest_version' data/gemfile/versions.yaml
 yq '.metadata.latest_version' data/snap/versions.yaml
 yq '.metadata.latest_version' data/homebrew/versions.yaml
 yq '.metadata.latest_version' data/chocolatey/versions.yaml
+yq '.metadata.latest_version' data/binary/versions.yaml
 
 # Get version count
 yq '.metadata.count' data/gemfile/versions.yaml
@@ -103,6 +111,9 @@ yq '.versions[].version' data/gemfile/versions.yaml
 
 # Get specific version info (Snap example with revision)
 yq '.versions[] | select(.version == "1.14.4")' data/snap/versions.yaml
+
+# Get platforms for a binary version
+yq '.versions[] | select(.version == "1.14.4") | .platforms' data/binary/versions.yaml
 ----
 
 === Parsing YAML with Ruby
@@ -160,6 +171,7 @@ Version data is automatically updated via GitHub Actions workflows:
 * `fetch-snap.yml` - Fetches Snap versions from Snapcraft API
 * `fetch-homebrew.yml` - Fetches Homebrew versions from GitHub tags
 * `fetch-chocolatey.yml` - Fetches Chocolatey versions from Chocolatey API
+* `fetch-binary.yml` - Fetches Binary (packed-mn) versions from GitHub releases
 
 These workflows run on schedule and can also be triggered manually.
 

@@ -13,7 +13,6 @@ on:
         options:
           - refresh
           - revamp
-          - update
       version:
         description: 'Version to update (required for update mode)'
         required: false
@@ -33,7 +32,14 @@ jobs:
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: '3.4'
-          bundler-cache: true
+
+      - name: Install mnenv
+        run: |
+          # Install mnenv from GitHub source
+          git clone --depth 1 https://github.com/metanorma/mnenv.git /tmp/mnenv
+          cd /tmp/mnenv
+          bundle install
+          bundle exec rake install
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -41,23 +47,12 @@ jobs:
       - name: Extract Gemfiles
         run: |
           MODE="${{ github.event.inputs.mode || 'refresh' }}"
-          VERSION="${{ github.event.inputs.version || '' }}"
 
-          case "$MODE" in
-            refresh)
-              bundle exec exe/mnenv gemfile refresh
-              ;;
-            revamp)
-              bundle exec exe/mnenv gemfile revamp
-              ;;
-            update)
-              if [ -z "$VERSION" ]; then
-                echo "Error: version input required for update mode"
-                exit 1
-              fi
-              bundle exec exe/mnenv gemfile update "$VERSION"
-              ;;
-          esac
+          if [ "$MODE" = "revamp" ]; then
+            mnenv gemfile --data-dir="$PWD/data" revamp
+          else
+            mnenv gemfile --data-dir="$PWD/data" refresh
+          fi
 
       - name: Detect material changes
         id: detect-changes
@@ -83,7 +78,7 @@ jobs:
         run: |
           echo "# Gemfiles Update" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Material Change:** ${{ steps.detect-changes.outputs.material_change == 'true' && 'Yes ⚠️' || 'No' }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Material Change:** ${{ steps.detect-changes.outputs.material_change == 'true' && 'Yes' || 'No' }}" >> $GITHUB_STEP_SUMMARY
           echo "**Mode:** ${{ github.event.inputs.mode || 'refresh' }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "## Version Diff" >> $GITHUB_STEP_SUMMARY
@@ -102,7 +97,7 @@ jobs:
           body: |
             Automated update of Gemfile/Gemfile.lock.archived extractions.
 
-            - **Material Change**: ${{ steps.detect-changes.outputs.material_change == 'true' && 'Yes ⚠️' || 'No' }}
+            - **Material Change**: ${{ steps.detect-changes.outputs.material_change == 'true' && 'Yes' || 'No' }}
             - **Mode**: ${{ github.event.inputs.mode || 'refresh' }}
 
             [View full details in the workflow summary](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})

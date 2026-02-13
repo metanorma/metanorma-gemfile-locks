@@ -1,4 +1,4 @@
-name: Fetch Snap
+name: Fetch Binary (packed-mn)
 
 on:
   schedule:
@@ -8,13 +8,15 @@ on:
       mode:
         description: 'Fetch mode'
         required: false
-        default: 'update'
+        default: 'refresh'
         type: choice
         options:
+          - refresh
+          - revamp
           - update
       version:
-        description: 'Version to update'
-        required: true
+        description: 'Version to update (required for update mode)'
+        required: false
         type: string
 
 permissions:
@@ -22,7 +24,7 @@ permissions:
   pull-requests: write
 
 jobs:
-  fetch-snap:
+  fetch-binary:
     runs-on: ubuntu-latest
 
     steps:
@@ -40,21 +42,38 @@ jobs:
           bundle install
           bundle exec rake install
 
-      - name: Fetch Snap versions
+      - name: Fetch Binary versions
+        # GITHUB_TOKEN is automatically available in GitHub Actions environment
+        # mnenv uses it for higher API rate limits (5000 req/hour vs 60 unauthenticated)
         run: |
-          VERSION="${{ github.event.inputs.version }}"
-          mnenv snap --data-dir="$PWD/data" update "$VERSION"
+          MODE="${{ github.event.inputs.mode || 'refresh' }}"
+          VERSION="${{ github.event.inputs.version || '' }}"
+
+          case "$MODE" in
+            refresh)
+              mnenv binary --data-dir="$PWD/data" refresh
+              ;;
+            revamp)
+              mnenv binary --data-dir="$PWD/data" revamp
+              ;;
+            update)
+              if [ -z "$VERSION" ]; then
+                echo "Error: version required"
+                exit 1
+              fi
+              mnenv binary --data-dir="$PWD/data" update "$VERSION"
+              ;;
+          esac
 
       - name: Detect material changes
         id: detect-changes
         run: |
-          if git diff --quiet data/snap/versions.yaml; then
+          if git diff --quiet data/binary/versions.yaml; then
             echo "has_changes=false" >> $GITHUB_OUTPUT
             echo "material_change=false" >> $GITHUB_OUTPUT
           else
             echo "has_changes=true" >> $GITHUB_OUTPUT
-
-            CHANGES=$(git diff data/snap/versions.yaml)
+            CHANGES=$(git diff data/binary/versions.yaml)
             if echo "$CHANGES" | grep -q "^[+-].*version:"; then
               echo "material_change=true" >> $GITHUB_OUTPUT
             elif echo "$CHANGES" | grep -q "latest_version:"; then
@@ -64,41 +83,23 @@ jobs:
             fi
           fi
 
-      - name: Generate PR body
-        if: steps.detect-changes.outputs.has_changes == 'true'
-        run: |
-          cat > $GITHUB_STEP_SUMMARY << 'EOF'
-          # Snap Versions Update
-
-          ## Changes Detected
-          - **Material Change**: ${{ steps.detect-changes.outputs.material_change == 'true' && 'Yes' || 'No' }}
-          - **Mode**: update
-
-          ## Version Diff
-          ```
-          $(git diff data/snap/versions.yaml || echo "No changes")
-          ```
-          EOF
-
       - name: Create Pull Request
         if: steps.detect-changes.outputs.has_changes == 'true'
         uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "chore: update snap version data${{ steps.detect-changes.outputs.material_change == 'true' && ' [material]' || '' }}"
-          branch: update/snap-versions
-          title: "chore${{ steps.detect-changes.outputs.material_change == 'true' && '!!!' || '' }}: update snap version data"
+          commit-message: "chore: update binary version data${{ steps.detect-changes.outputs.material_change == 'true' && ' [material]' || '' }}"
+          branch: update/binary-versions
+          title: "chore${{ steps.detect-changes.outputs.material_change == 'true' && '!!!' || '' }}: update binary version data"
           body: |
-            Automated update of Snap version data.
+            Automated update of Binary (packed-mn) version data.
 
             - **Material Change**: ${{ steps.detect-changes.outputs.material_change == 'true' && 'Yes' || 'No' }}
-            - **Mode**: update
-
-            [View full details in the workflow summary](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            - **Mode**: ${{ github.event.inputs.mode || 'refresh' }}
           labels: |
             automated
             dependencies
-            snap
+            binary
             ${{ steps.detect-changes.outputs.material_change == 'true' && 'material-change' || '' }}
           draft: ${{ steps.detect-changes.outputs.material_change == 'false' }}
           delete-branch: true

@@ -33,7 +33,14 @@ jobs:
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: '3.4'
-          bundler-cache: true
+
+      - name: Install mnenv
+        run: |
+          # Install mnenv from GitHub source
+          git clone --depth 1 https://github.com/metanorma/mnenv.git /tmp/mnenv
+          cd /tmp/mnenv
+          bundle install
+          bundle exec rake install
 
       - name: Fetch Chocolatey versions
         run: |
@@ -42,17 +49,17 @@ jobs:
 
           case "$MODE" in
             refresh)
-              bundle exec exe/mnenv chocolatey refresh
+              mnenv chocolatey --data-dir="$PWD/data" refresh
               ;;
             revamp)
-              bundle exec exe/mnenv chocolatey revamp
+              mnenv chocolatey --data-dir="$PWD/data" revamp
               ;;
             update)
               if [ -z "$VERSION" ]; then
                 echo "Error: version required"
                 exit 1
               fi
-              bundle exec exe/mnenv chocolatey update "$VERSION"
+              mnenv chocolatey --data-dir="$PWD/data" update "$VERSION"
               ;;
           esac
 
@@ -85,7 +92,7 @@ jobs:
           body: |
             Automated update of Chocolatey version data.
 
-            - **Material Change**: ${{ steps.detect-changes.outputs.material_change == 'true' && 'Yes ⚠️' || 'No' }}
+            - **Material Change**: ${{ steps.detect-changes.outputs.material_change == 'true' && 'Yes' || 'No' }}
             - **Mode**: ${{ github.event.inputs.mode || 'refresh' }}
           labels: |
             automated

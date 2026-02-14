@@ -1,20 +1,34 @@
-= Metanorma Version Registry
+= Metanorma Version Register
 
 image:https://img.shields.io/github/license/metanorma/versions[License]
 
-Static version registry for Metanorma across multiple package sources.
+Static version register for Metanorma across multiple package sources.
 
 == Purpose
 
-This repository serves as a **read-only version registry** for Metanorma, storing
+This repository serves as a **read-only version register** for Metanorma, storing
 version metadata and Gemfile archives from various distribution channels:
 
-* **Gemfile (Docker)** - Gemfile/Gemfile.lock.archived files extracted from
-  Docker Hub images
-* **Snap** - Snapcraft snap packages with revision tracking
-* **Homebrew** - macOS Homebrew formula versions from GitHub tags
-* **Chocolatey** - Windows Chocolatey packages
-* **Binary (packed-mn)** - Pre-compiled binaries from GitHub releases
+**Gemfile (Docker)**:: Gemfile/Gemfile.lock.archived files extracted from
+  https://hub.docker.com/r/metanorma/metanorma[metanorma/metanorma] Docker
+  images for each version (built at
+  https://github.com/metanorma/metanorma-docker[metanorma-docker] using
+  Gemfiles)
+
+**Snap**:: Snapcraft snap packages with revision tracking (built at
+https://github.com/metanorma/metanorma-snap[metanorma-snap] wrapping packed-mn
+binaries)
+
+**Homebrew**:: macOS Homebrew formula versions from GitHub tags (built at
+https://github.com/metanorma/homebrew-metanorma[homebrew-metanorma] wrapping
+packed-mn binaries)
+
+**Chocolatey**:: Windows Chocolatey packages (built at
+https://github.com/metanorma/chocolatey-metanorma[chocolatey-metanorma] wrapping
+packed-mn binaries)
+
+**Binary (packed-mn)**:: Pre-compiled binaries from GitHub releases at
+https://github.com/metanorma/packed-mn[packed-mn]
 
 This enables link:https://github.com/metanorma/actions-mn[actions-mn] and
 link:https://github.com/metanorma/mnenv[mnenv] to provide version selection
@@ -22,9 +36,10 @@ across all platforms.
 
 == Related repositories
 
-* **link:https://github.com/metanorma/mnenv[mnenv]** - Metanorma version
+**link:https://github.com/metanorma/mnenv[mnenv]**:: Metanorma version
   manager CLI (installation, version switching, shim management)
-* **link:https://github.com/metanorma/actions-mn[actions-mn]** - GitHub Actions
+
+**link:https://github.com/metanorma/actions-mn[actions-mn]**:: GitHub Actions
   for setting up Metanorma
 
 == Data structure
@@ -68,68 +83,6 @@ Additional fields per source:
 * **Binary** - `tag_name`, `html_url`, `platforms` (array with `name`, `arch`, `variant`, `format`, `filename`)
 
 == Usage
-
-=== Reading version data directly
-
-The version data is stored in YAML files under `data/` directory. You can read
-these files directly:
-
-[source,shell]
-----
-# View all Gemfile versions
-cat data/gemfile/versions.yaml
-
-# View all Snap versions with revisions
-cat data/snap/versions.yaml
-
-# View all Homebrew versions
-cat data/homebrew/versions.yaml
-
-# View all Chocolatey versions
-cat data/chocolatey/versions.yaml
-
-# View all Binary (packed-mn) versions
-cat data/binary/versions.yaml
-----
-
-=== Parsing YAML with `yq`
-
-[source,shell]
-----
-# Get the latest version from each source
-yq '.metadata.latest_version' data/gemfile/versions.yaml
-yq '.metadata.latest_version' data/snap/versions.yaml
-yq '.metadata.latest_version' data/homebrew/versions.yaml
-yq '.metadata.latest_version' data/chocolatey/versions.yaml
-yq '.metadata.latest_version' data/binary/versions.yaml
-
-# Get version count
-yq '.metadata.count' data/gemfile/versions.yaml
-
-# Get all version numbers
-yq '.versions[].version' data/gemfile/versions.yaml
-
-# Get specific version info (Snap example with revision)
-yq '.versions[] | select(.version == "1.14.4")' data/snap/versions.yaml
-
-# Get platforms for a binary version
-yq '.versions[] | select(.version == "1.14.4") | .platforms' data/binary/versions.yaml
-----
-
-=== Parsing YAML with Ruby
-
-[source,ruby]
-----
-require 'yaml'
-
-# Load Gemfile versions
-data = YAML.load_file('data/gemfile/versions.yaml')
-puts "Latest: #{data['metadata']['latest_version']}"
-puts "Count: #{data['metadata']['count']}"
-
-# Find specific version
-version_1_14_4 = data['versions'].find { |v| v['version'] == '1.14.4' }
-----
 
 === Using Gemfile files for a version
 
@@ -175,23 +128,31 @@ Version data is automatically updated via GitHub Actions workflows:
 
 These workflows run on schedule and can also be triggered manually.
 
+NOTE: All version data sources can be completely rebuilt by re-running the
+corresponding workflow with the `revamp` option, with the `fetch-snap.yml`
+workflow the exception because Snapcraft does not provide historical revision
+data through its public API (which this repository uses). The full rebuild of
+the Snap versions data source is only possible by using the private Snapcraft
+API, which is not currently implemented in the workflow.
+
 == Historical Gemfile lock archive
 
-This repository stores Gemfile and Gemfile.lock.archived files extracted from
+This repository stores `Gemfile` and `Gemfile.lock` files extracted from
 https://hub.docker.com/r/metanorma/metanorma[Docker Hub: metanorma/metanorma]
 Docker containers for each version of Metanorma.
 
 When deploying or using Metanorma, you may need to install the exact same gem
 versions that are used in a specific Docker container release. This repository
-provides the Gemfile and Gemfile.lock.archived files for each version of the
+provides the `Gemfile` and `Gemfile.lock.archived` files for each version of the
 metanorma/metanorma Docker image, allowing you to replicate the exact gem
 dependency set.
 
-== License
+NOTE: The `Gemfile.lock` files from the Docker images are renamed with the
+`.archived` suffix to avoid GitHub issuing security alerts for outdated gems.
+
+== Copyright and license
+
+Copyright Ribose.
 
 This repository is available as open source under the terms of the
-{file-license}[MIT License].
-
-== Copyright
-
-Copyright (c) 2025 Ribose Inc.
+Ribose 3-clause BSD license.

@@ -25,6 +25,9 @@ permissions:
 
 jobs:
   fetch-snap:
+    outputs:
+      pr-number: ${{ steps.create-pr.outputs.pull-request-number }}
+      material-change: ${{ steps.detect-changes.outputs.material_change }}
     runs-on: ubuntu-latest
 
     steps:
@@ -125,3 +128,13 @@ jobs:
             ${{ steps.detect-changes.outputs.material_change == 'true' && 'material-change' || '' }}
           draft: ${{ steps.detect-changes.outputs.material_change == 'false' }}
           delete-branch: true
+
+  merge-pr:
+    needs: fetch-snap
+    if: >-
+      needs.fetch-snap.outputs.pr-number != '' &&
+      needs.fetch-snap.outputs.material-change == 'true' &&
+      needs.fetch-snap.result == 'success'
+    uses: metanorma/ci/.github/workflows/generic-bot-pr-merge.yml@main
+    with:
+      pr-number: ${{ needs.fetch-snap.outputs.pr-number }}

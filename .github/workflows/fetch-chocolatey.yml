@@ -25,6 +25,9 @@ permissions:
 
 jobs:
   fetch-chocolatey:
+    outputs:
+      pr-number: ${{ steps.create-pr.outputs.pull-request-number }}
+      material-change: ${{ steps.detect-changes.outputs.material_change }}
     runs-on: ubuntu-latest
 
     steps:
@@ -101,3 +104,13 @@ jobs:
             ${{ steps.detect-changes.outputs.material_change == 'true' && 'material-change' || '' }}
           draft: ${{ steps.detect-changes.outputs.material_change == 'false' }}
           delete-branch: true
+
+  merge-pr:
+    needs: fetch-chocolatey
+    if: >-
+      needs.fetch-chocolatey.outputs.pr-number != '' &&
+      needs.fetch-chocolatey.outputs.material-change == 'true' &&
+      needs.fetch-chocolatey.result == 'success'
+    uses: metanorma/ci/.github/workflows/generic-bot-pr-merge.yml@main
+    with:
+      pr-number: ${{ needs.fetch-chocolatey.outputs.pr-number }}

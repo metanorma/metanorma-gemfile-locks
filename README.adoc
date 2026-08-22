@@ -116,8 +116,8 @@ Validated by `.github/scripts/validate_versions.py`, run from the `validate-vers
 
 Run locally:
 
- pip install jsonschema PyYAML referencing
- python3 .github/scripts/validate_versions.py
+ gem install json_schemer
+ ruby .github/scripts/validate_versions.rb
 
 
 == Usage

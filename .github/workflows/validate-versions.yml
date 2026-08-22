@@ -29,12 +29,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+      - uses: ruby/setup-ruby@v1
         with:
-          python-version: "3.12"
+          ruby-version: "3.3"
 
+      # Data repo with no Gemfile — gem-install pattern (cf. `gem install
+      # gem-release` in metanorma/ci workflows).
       - name: Install validator deps
-        run: pip install --no-input jsonschema==4.23.0 PyYAML==6.0.2
+        run: gem install json_schemer
 
       - name: Validate gemfile versions
-        run: python3 .github/scripts/validate_versions.py
+        run: ruby .github/scripts/validate_versions.rb
